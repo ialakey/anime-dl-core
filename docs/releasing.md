@@ -54,6 +54,16 @@ that GitHub issues to this repository only.
 3. Push a `v*` tag. The first successful upload turns the pending publisher into
    a normal one.
 
+If the project already exists on PyPI (for example it was first uploaded with a
+token), a *pending* publisher is not the right form — add it on the project
+itself instead: **Your projects → anime-dl-core → Manage → Publishing → Add a
+new publisher**, with the same owner, repository and workflow name.
+
+To check the credentials without cutting a release, run the workflow manually:
+**Actions → Publish to PyPI → Run workflow**, target `pypi`. A manual run passes
+`skip-existing`, so an already published version is skipped instead of failing —
+the point of the run is the authentication, not the upload.
+
 ### Option 2 — API token
 
 1. On PyPI: **Your account → API tokens → Add API token**. Before the project
@@ -64,7 +74,8 @@ that GitHub issues to this repository only.
    * Name: `PYPI_API_TOKEN`
    * Value: the token, `pypi-` prefix included
 3. Push a `v*` tag. The token takes precedence over Trusted Publishing when
-   both are configured.
+   both are configured — so to switch back to OIDC, delete the secret and set
+   the variable.
 
 ## TestPyPI
 

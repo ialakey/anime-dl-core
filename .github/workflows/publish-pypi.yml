@@ -91,15 +91,22 @@ jobs:
             echo "::notice::PyPI publishing is not configured, skipping the upload. Enable it either by setting the repository variable PYPI_TRUSTED_PUBLISHING=true (after adding a pending publisher on PyPI for this repository and workflow) or by adding a PYPI_API_TOKEN secret. See docs/releasing.md."
           fi
 
+      # skip-existing on a manual run only. A dispatch is a smoke test of the
+      # credentials — the version is usually already on PyPI, and re-uploading
+      # one is an error there. A tag run stays strict: if the version is taken,
+      # that is a mistake worth failing on.
       - name: Publish to PyPI (Trusted Publishing)
         if: steps.mode.outputs.mode == 'trusted' && inputs.target != 'testpypi'
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: ${{ github.event_name == 'workflow_dispatch' }}
 
       - name: Publish to PyPI (API token)
         if: steps.mode.outputs.mode == 'token' && inputs.target != 'testpypi'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: ${{ github.event_name == 'workflow_dispatch' }}
 
       # TestPyPI is a separate account with its own token or its own pending
       # publisher; it is only ever reached through a manual run.
