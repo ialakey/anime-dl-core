@@ -1,0 +1,192 @@
+# Tests, builds the distributions and publishes them.
+#
+# Every push to main: the offline test suite on three Python versions, an sdist
+# + wheel build, a smoke test of the installed wheel, and the artifacts go to
+# the rolling "latest" pre-release — so the current build is always one URL
+# away:
+#   https://github.com/ialakey/anime-dl-core/releases/download/latest/
+#
+# A tag like v1.2.0 does the same and creates a proper versioned release.
+#
+# A pull request runs everything up to and including the smoke test and
+# publishes nothing: the release steps are gated on the ref. The distributions
+# are attached to the run as artifacts either way, so a reviewer can install
+# the exact wheel the PR produces.
+#
+# Release notes always carry the commit the build came from and the SHA-256 of
+# every published file: the packages are unsigned, so the hash is what a user
+# can check to prove the file is the one this run produced.
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Needed by the release steps, which only run on main and on tags. A pull
+# request from a fork gets a read-only token regardless, and those steps are
+# skipped on a PR anyway.
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Only the offline suite runs here. The live tests talk to real player sites
+  # and fail when a title is pulled or a service is geo-blocked from the runner
+  # — that is not a regression of this library, and CI must not go red for it.
+  # Run them locally: ANIME_PLAYERS_LIVE=1 pytest -m live
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install the package with test extras
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[async,dev]"
+
+      - name: Run the offline test suite
+        run: python -m pytest -q
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Check the metadata
+        run: python -m twine check dist/*
+
+      # Installing the built wheel in a clean venv is the point of this step:
+      # a package that imports only from the source tree is a package that is
+      # broken for everyone who installs it.
+      - name: Smoke-test the built wheel
+        run: |
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/python -m pip install --quiet dist/*.whl
+          /tmp/smoke/bin/python -c "import anime_players; print(anime_players.__version__, anime_players.player_names())"
+          /tmp/smoke/bin/anime-players --list
+
+      # The hashes go into the log, the run summary and (below) the release
+      # notes. The packages are unsigned, so this is what a user can verify.
+      - name: Hash the distributions
+        run: |
+          set -euo pipefail
+          {
+            echo "## Distributions"
+            echo
+            echo "Commit: \`${GITHUB_SHA}\`"
+            echo
+            echo '| File | SHA-256 |'
+            echo '|---|---|'
+          } >> "$GITHUB_STEP_SUMMARY"
+          : > dist-sha256.txt
+          for file in dist/*; do
+            hash=$(sha256sum "$file" | cut -d' ' -f1)
+            name=$(basename "$file")
+            echo "$hash  $name" >> dist-sha256.txt
+            echo "| \`$name\` | \`$hash\` |" >> "$GITHUB_STEP_SUMMARY"
+            echo "SHA-256 $name: $hash"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            dist/*
+            dist-sha256.txt
+          retention-days: 30
+
+      # The notes are assembled once and reused by both release steps below.
+      - name: Compose the release notes
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -euo pipefail
+          {
+            echo "NOTES<<NOTES_EOF"
+            echo "Built from \`${GITHUB_REF_NAME}\` on $(date -u '+%Y-%m-%d %H:%M UTC')."
+            echo
+            echo "**Commit:** \`${GITHUB_SHA}\`"
+            echo
+            echo "Install the wheel from this release:"
+            echo
+            echo '```bash'
+            echo "pip install https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/$(cd dist && ls *.whl)"
+            echo '```'
+            echo
+            echo "**SHA-256**"
+            echo
+            echo '```'
+            cat dist-sha256.txt
+            echo '```'
+            echo
+            echo "Verify with \`sha256sum <file>\` (Linux/macOS) or"
+            echo "\`Get-FileHash <file> -Algorithm SHA256\` (PowerShell)."
+            echo "NOTES_EOF"
+          } >> "$GITHUB_ENV"
+        env:
+          RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
+
+      - name: Publish the rolling "latest" release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # The tag has to follow main, or the release keeps pointing at the
+          # commit it was first created from.
+          git tag -f latest
+          git push -f origin latest
+          if gh release list --json tagName --jq '.[].tagName' | grep -qx latest; then
+            gh release edit latest --prerelease --title "Latest build (main)" --notes "$NOTES"
+          else
+            gh release create latest --prerelease --title "Latest build (main)" --notes "$NOTES"
+          fi
+          gh release upload latest dist/* dist-sha256.txt --clobber
+
+      - name: Publish the versioned release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          if ! gh release list --json tagName --jq '.[].tagName' | grep -qx "$tag"; then
+            gh release create "$tag" --title "anime-dl-core $tag" --notes "$NOTES"
+          else
+            gh release edit "$tag" --notes "$NOTES"
+          fi
+          gh release upload "$tag" dist/* dist-sha256.txt --clobber

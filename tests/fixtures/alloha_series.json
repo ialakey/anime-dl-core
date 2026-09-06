@@ -1,0 +1,241 @@
+{
+ "status": "success",
+ "data": {
+  "name": "Атака титанов",
+  "original_name": "Shingeki no kyojin",
+  "alternative_name": "Attack on Titan",
+  "year": 2013,
+  "category": 4,
+  "id_kp": 749374,
+  "alternative_id_kp": null,
+  "id_imdb": "tt2560140",
+  "id_tmdb": 1429,
+  "id_world_art": 1245,
+  "token_movie": "7bc2f2ea7973f85b7609512c636999",
+  "country": "Япония",
+  "genre": "аниме, мультфильм, фантастика, драма, боевик, фэнтези",
+  "actors": "Юки Кадзи, Юи Исикава, Марина Иноуэ, Хироси Камия, Ю Кобаяси, Роми Пак, Ю Симамура, Кисё Танияма, Даисукэ Оно, Саки Фудзита",
+  "directors": "Тэцуро Араки, Масаси Коидзука, Хироюки Танака, Синтаро Итога",
+  "producers": "Син Фурукава, Тэцуя Киносита, Тосихиро Маэда, Томохито Нагасэ",
+  "premiere_ru": "2014-09-23",
+  "premiere": "2013-04-07",
+  "age_restrictions": 18,
+  "rating_mpaa": null,
+  "rating_kp": 8.727,
+  "rating_imdb": 9.1,
+  "time": "00:24",
+  "tagline": "The face of humanity's extinction. (season 1)",
+  "poster": "https://avatars.mds.yandex.net/get-kinopoisk-image/6201401/e42e60bc-0772-4a3a-a24f-4218febf9386/600x900",
+  "description": "Уже многие годы человечество ведёт борьбу с титанами — огромными существами, которые не обладают особым интеллектом, зато едят людей и получают от этого удовольствие. После продолжительной борьбы остатки человечества построили высокую стену, окружившую страну людей, через которую титаны пройти не могли. С тех пор прошло сто лет, люди мирно живут под защитой стены. Но однажды подростки Эрен и Микаса становятся свидетелями страшного события — участок стены разрушается супертитаном, появившимся прямо из воздуха. Титаны нападают на город, и дети в ужасе видят, как один из монстров заживо съедает мать Эрена. Мальчик клянётся, что убьёт всех титанов и отомстит за человечество.",
+  "seasons_count": 4,
+  "seasons": {
+   "1": {
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&season=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "season": 1,
+    "episodes": {
+     "1": {
+      "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&season=1&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+      "episode": 1,
+      "translation": {
+       "10": {
+        "translation": "Anilibria",
+        "quality": "BDRip",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=10&season=1&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "66": {
+        "translation": "Дублированный",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=66&season=1&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "231": {
+        "translation": "Казахский",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=231&season=1&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "79": {
+        "translation": "Субтитры",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=79&season=1&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       }
+      }
+     },
+     "2": {
+      "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&season=1&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+      "episode": 2,
+      "translation": {
+       "10": {
+        "translation": "Anilibria",
+        "quality": "BDRip",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=10&season=1&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "66": {
+        "translation": "Дублированный",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=66&season=1&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "231": {
+        "translation": "Казахский",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=231&season=1&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "79": {
+        "translation": "Субтитры",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=79&season=1&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       }
+      }
+     }
+    }
+   },
+   "2": {
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&season=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "season": 2,
+    "episodes": {
+     "1": {
+      "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&season=2&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+      "episode": 1,
+      "translation": {
+       "10": {
+        "translation": "Anilibria",
+        "quality": "HDTVRip",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=10&season=2&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "66": {
+        "translation": "Дублированный",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=66&season=2&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "231": {
+        "translation": "Казахский",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=231&season=2&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "79": {
+        "translation": "Субтитры",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=79&season=2&episode=1&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       }
+      }
+     },
+     "2": {
+      "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&season=2&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+      "episode": 2,
+      "translation": {
+       "10": {
+        "translation": "Anilibria",
+        "quality": "HDTVRip",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=10&season=2&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "66": {
+        "translation": "Дублированный",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=66&season=2&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "231": {
+        "translation": "Казахский",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=231&season=2&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       },
+       "79": {
+        "translation": "Субтитры",
+        "quality": "WEB-DL",
+        "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=79&season=2&episode=2&token=04941a9a3ca3ac16e2b4327347bbc1",
+        "uhd": false,
+        "lgbt": false
+       }
+      }
+     }
+    }
+   }
+  },
+  "last_episode": 30,
+  "quality": "WEB-DL, WEBRip, HDTVRip, BDRip",
+  "translation": "DEEP, Субтитры, Многоголосый закадровый, Дублированный, Anilibria, Казахский, AniStar",
+  "translation_iframe": {
+   "260": {
+    "name": "DEEP",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=260&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "WEB-DL",
+    "adv": false,
+    "date": "2025-04-22 16:06:16"
+   },
+   "79": {
+    "name": "Субтитры",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=79&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "WEB-DL",
+    "adv": false,
+    "date": "2025-04-22 16:06:16"
+   },
+   "72": {
+    "name": "Многоголосый закадровый",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=72&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "WEB-DL",
+    "adv": false,
+    "date": "2025-04-22 16:06:16"
+   },
+   "66": {
+    "name": "Дублированный",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=66&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "WEB-DL",
+    "adv": false,
+    "date": "2025-04-22 16:06:16"
+   },
+   "10": {
+    "name": "Anilibria",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=10&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-07 19:17:21"
+   },
+   "231": {
+    "name": "Казахский",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=231&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "WEB-DL",
+    "adv": false,
+    "date": "2025-04-22 16:06:16"
+   },
+   "158": {
+    "name": "AniStar",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&translation=158&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "WEBRip",
+    "adv": true,
+    "date": "2023-03-04 01:13:40"
+   }
+  },
+  "iframe": "https://miyagi-as.stravers.live/?token_movie=7bc2f2ea7973f85b7609512c636999&token=04941a9a3ca3ac16e2b4327347bbc1",
+  "iframe_trailer": null,
+  "lgbt": false,
+  "uhd": false,
+  "available_directors_cut": false
+ }
+}

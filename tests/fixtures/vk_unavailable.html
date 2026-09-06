@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head><title>Video embed</title></head><body>
+<!-- страница недоступного видео (обрезана) -->
+<script>;window.cur || {}, {"apiPrefetchCache":[]}, {"screen":"embed","module":"video"});function changeStyle(element, styles) {
+    Object.assign(element.style, styles);
+}
+
+function onResize() {
+  if (window.innerHeight && window.innerHeight < 340) {
+    document.getElementById('video_ext_desc').style.display = 'none';
+    if (window.innerHeight < 290) {
+      changeStyle(document.querySelector('#light_cry_dog'), {width: '80px', height: '80px', backgroundSize: '80px 80px', marginBottom: '10px'});
+      changeStyle(document.querySelector('#video_ext_wrap'), {marginTop: '-100px'});
+      changeStyle(document.querySelector('#video_ext_msg'), {fontSize: '12px', lineHeight: '140%'});
+      changeStyle(document.querySelector('#video_ext_btn'), {marginTop: '10px'});
+    } else {
+      changeStyle(document.querySelector('#video_ext_wrap'), {marginTop: '-130px'});
+      changeStyle(document.querySelector('#light_cry_dog'), {width: '120px', height: '120px', backgroundSize: '120px 120px', marginBottom: '15px'});
+      changeStyle(document.querySelector('#video_ext_btn'), {marginTop: '15px'});
+    }
+  }
+}
+onResize();
+window.embedErrorCallback?.(7);
+  });</script>
+</body></html>

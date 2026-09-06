@@ -1,0 +1,278 @@
+<html>
+	<head>
+		<style>html { height: 100%; overflow: hidden; } body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; }</style>
+		<script src="https://aser.pro/player/playerjs.js?v=122" type="text/javascript"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+				<script type="text/javascript" charset="utf-8" src="https://yandex.ru/ads/system/adsdk.js"></script>
+			</head>
+	<body>
+
+		<div id="videoplayer20182" style="width:100%;height:100%;position:relative;box-sizing:border-box"></div>
+				<div id="preroll_overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;cursor:pointer;" title="Нажмите для просмотра"></div>
+		
+		
+				<div id="video_ad" style="width:100%;height:100%; display:none; background:red">
+			<video id="video_ad_v" style="width:100%;height:100%;" controls>
+				<source src="#" type="video/mp4">
+			</video>
+		</div>
+		
+				<script>
+$(document).ready(function () {
+
+  function clearStoredSoundState() {
+    try {
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        var value = localStorage.getItem(key) || '';
+        var haystack = key + ' ' + value;
+        if (/playerjs|player|pjs/i.test(haystack) && /mute|muted|volume|vol/i.test(haystack)) {
+          keys.push(key);
+        }
+      }
+      for (var j = 0; j < keys.length; j++) {
+        localStorage.removeItem(keys[j]);
+      }
+    } catch (e) {}
+  }
+  function forceMainSound() {
+    try { player.api('unmute'); } catch (e) {}
+    var main = getMainVideo();
+    if (main) {
+      try { main.muted = false; } catch (e) {}
+    }
+  }
+  clearStoredSoundState();
+
+  var player = new Playerjs({
+    id: "videoplayer20182",
+    file: "https://aser.pro/content/stream/raskolotaya_bitvoj_sineva_nebes_5/001_20182/hls/index.m3u8"
+  });
+  setTimeout(forceMainSound, 100);
+  setTimeout(forceMainSound, 500);
+  setTimeout(forceMainSound, 1200);
+
+  var video1, video2, slot;
+
+  var prerollShown = false;
+  var prerollByOverlay = false;
+  var midrollShown = false;
+  var postrollShown = false;
+  var adInProgress = false;
+  var durationReady = false;
+
+  function onPrerollTap(e) {
+    if (prerollByOverlay) return;
+    prerollByOverlay = true;
+    e.preventDefault();
+    e.stopPropagation();
+    $('#preroll_overlay').off('click touchstart').hide();
+    prerollShown = true;
+    StartAd(0);
+  }
+  $('#preroll_overlay').on('click touchstart', onPrerollTap);
+
+  function getMainVideo() {
+    if (video1 && document.getElementById('video_ad') && !document.getElementById('video_ad').contains(video1)) return video1;
+    var container = document.getElementById('videoplayer20182');
+    if (container) {
+      var v = container.querySelector('video');
+      if (v) return v;
+    }
+    var adEl = document.getElementById('video_ad');
+    if (!adEl) return video1;
+    var all = document.querySelectorAll('video');
+    for (var i = 0; i < all.length; i++) {
+      if (!adEl.contains(all[i])) return all[i];
+    }
+    return video1;
+  }
+  function pauseMain() {
+    if (typeof player !== 'undefined') {
+      try { player.api('pause'); } catch (e) {}
+    }
+    var main = getMainVideo();
+    if (main) try { main.pause(); } catch (e) {}
+  }
+  var resumingAfterAd = false;
+  function resumeMain(fromPostroll) {
+    adInProgress = false;
+    $("#videoplayer20182").show();
+    $("#video_ad").hide();
+    if (fromPostroll) {
+      pauseMain();
+      setTimeout(pauseMain, 100);
+      return;
+    }
+    resumingAfterAd = true;
+    try { player.api('unmute'); } catch (e) {}
+    var main = getMainVideo();
+    if (main) {
+      try { main.muted = false; } catch (e) {}
+    }
+    if (typeof player !== 'undefined') {
+      try { player.api('play'); } catch (e) {}
+    } else {
+      if (main) try { main.play(); } catch (e) {}
+    }
+    setTimeout(function () {
+      try { player.api('unmute'); } catch (e) {}
+      var mainAfterAd = getMainVideo();
+      if (mainAfterAd) {
+        try { mainAfterAd.muted = false; } catch (e) {}
+      }
+    }, 300);
+    setTimeout(function () { resumingAfterAd = false; }, 800);
+  }
+
+  function attachVideos() {
+    var videos = document.querySelectorAll('video');
+    if (videos.length < 2) return false;
+
+    video1 = videos[0];
+    video2 = videos[1];
+    slot   = document.getElementById('video_ad');
+
+    if (!video1 || !video2 || !slot) return false;
+
+    console.log("Видео подключено");
+
+    video1.addEventListener('loadedmetadata', function () {
+      durationReady = true;
+      console.log("Длительность:", video1.duration);
+    });
+
+    // Кнопка «Пропустить заставку»: один или несколько отрезков (id_10_30-45 или id_10-23_45-57)
+    var skipSegments = [];
+    var skipBtn = document.getElementById('skip_intro_btn');
+    function currentSegment(t) {
+      for (var i = 0; i < skipSegments.length; i++) {
+        if (t >= skipSegments[i].start && t < skipSegments[i].end) return skipSegments[i];
+      }
+      return null;
+    }
+    if (skipBtn && skipSegments.length > 0) {
+      skipBtn.onclick = function () {
+        var seg = currentSegment(video1.currentTime);
+        if (video1 && seg && !isNaN(video1.duration) && video1.duration > seg.end) {
+          video1.currentTime = seg.end;
+        }
+      };
+    }
+
+    // PREROLL: при первом play показываем рекламу; после возврата из рекламы (resumeMain -> play) не запускаем рекламу снова
+    function onMainPlay() {
+      if (resumingAfterAd) return;
+      if (!prerollShown && !adInProgress) {
+        prerollShown = true;
+        console.log("PREROLL");
+        StartAd(0);
+        video1.removeEventListener('play', onMainPlay);
+      }
+    }
+    video1.addEventListener('play', onMainPlay);
+
+    // MIDROLL
+    video1.addEventListener('timeupdate', function () {
+
+      if (!durationReady) return;
+
+      var duration = video1.duration;
+      var current  = video1.currentTime;
+
+      if (skipBtn && skipSegments.length > 0) {
+        skipBtn.style.display = currentSegment(current) ? 'block' : 'none';
+      }
+
+      if (midrollShown || adInProgress) return;
+
+      if (duration >= 1800 && current >= duration * 0.5) {
+        midrollShown = true;
+        console.log("MIDROLL");
+        StartAd(2);
+      }
+    });
+
+    // POSTROLL
+    video1.addEventListener('ended', function () {
+      if (postrollShown || adInProgress) return;
+      postrollShown = true;
+      console.log("POSTROLL");
+      StartAd(1);
+    });
+
+    return true;
+  }
+
+  if (!attachVideos()) {
+    var tries = 0;
+    var wait = setInterval(function () {
+      if (attachVideos() || ++tries > 50) clearInterval(wait);
+    }, 200);
+  }
+
+  function StartAd(impId) {
+
+    if (adInProgress) return;
+    adInProgress = true;
+
+    $("#videoplayer20182").hide();
+    $("#video_ad").show();
+    if (!prerollByOverlay) pauseMain();
+
+    if (typeof ya === 'undefined' || !ya.videoAd) {
+      console.log("SDK не загружен");
+      resumeMain(impId === 1);
+      return;
+    }
+
+    // Явная привязка к блокам Яндекса:
+    // StartAd(0)=preroll -> imp-id=1
+    // StartAd(2)=midroll -> imp-id=3
+    // StartAd(1)=postroll -> imp-id=2
+    var yandexImpId = 1;
+    if (impId === 2) {
+      yandexImpId = 3;
+    } else if (impId === 1) {
+      yandexImpId = 2;
+    }
+
+    var contentDuration = (typeof player !== 'undefined' && player.api('duration')) ? player.api('duration') : (video1 && video1.duration) || 0;
+    ya.videoAd
+      .loadModule('AdLoader')
+      .then(function (module) {
+        return module.AdLoader.create({
+          partnerId: 18499069,
+          impId: yandexImpId,
+          category: 0,
+          videoContentUrl: window.location.href,
+          videoContentDuration: contentDuration,
+          targetRef: document.referrer
+        });
+      })
+      .then(function (adLoader) {
+        return adLoader.loadAd();
+      })
+      .then(function (adStore) {
+        console.log("Реклама загружена");
+        var controller = adStore.createPlaybackController(video2, slot);
+        var isPostroll = (impId === 1);
+        controller.subscribe('AdStopped', function () {
+          resumeMain(isPostroll);
+        });
+        $("#videoplayer20182").hide();
+        $("#video_ad").show();
+        controller.playAd();
+      })
+      .catch(function (err) {
+        console.log("Ошибка рекламы:", err);
+        resumeMain(impId === 1);
+      });
+  }
+
+});
+</script>
+
+<img class="ad-detect" src="/ad.png" alt="" width="1" height="1" decoding="async" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;margin:0;padding:0" />			</body>
+</html>

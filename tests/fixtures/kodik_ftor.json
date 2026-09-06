@@ -1,0 +1,25 @@
+{
+ "advert_script": "",
+ "domain": "animego.org",
+ "default": 360,
+ "links": {
+  "360": [
+   {
+    "src": "Tg9rjO91HK5hj2fdHOVsjq5rj20dlFVtkvDejO9pHPUdVLQeUhIgV2GbGENtUg00HODqTERtU2QbWLZrHuHrHuG1UBM0ThGgWBRrUrQ1GrGfVOCfVuZqULU5VBHtUhHtVrs2UuHsWrQeUrGeWBI3ULkdUhGeTu1eVLxwjPU6jENciEHtk3YcjBV1WI",
+    "type": "application/x-mpegURL"
+   }
+  ],
+  "480": [
+   {
+    "src": "Tg9rjO91HK5hj2fdHOVsjq5rj20dlFVtkvDejO9pHPUdVLQeUhIgV2GbGENtUg00HODqTERtU2QbWLZrHuHrHuG1UBM0ThGgWBRrUrQ1GrGfVOCfVuZqULU5VBHtUhHtVrs2UuHsWrQeUrGeWBI3ULkdVLoeTu1eVLxwjPU6jENciEHtk3YcjBV1WI",
+    "type": "application/x-mpegURL"
+   }
+  ],
+  "720": [
+   {
+    "src": "Tg9rjO91HK5hj2fdHOVsjq5rj20dlFVtkvDejO9pHPUdVLQeUhIgV2GbGENtUg00HODqTERtU2QbWLZrHuHrHuG1UBM0ThGgWBRrUrQ1GrGfVOCfVuZqULU5VBHtUhHtVrs2UuHsWrQeUrGeWBI3ULkdVhQeTu1eVLxwjPU6jENciEHtk3YcjBV1WI",
+    "type": "application/x-mpegURL"
+   }
+  ]
+ }
+}

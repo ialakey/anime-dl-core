@@ -1,0 +1,64 @@
+{
+ "id": 8452,
+ "type": {
+  "value": "TV",
+  "description": "ТВ"
+ },
+ "year": 2004,
+ "name": {
+  "main": "Блич",
+  "english": "Bleach",
+  "alternative": "отбеливатель, белизна, bleach"
+ },
+ "alias": "bleach",
+ "poster": {
+  "src": "/storage/releases/posters/8452/bJotddCEwNlavuWUX6yUPCCP173Nxc8e.jpg",
+  "preview": "/storage/releases/posters/8452/bJotddCEwNlavuWUX6yUPCCP173Nxc8e.jpg",
+  "thumbnail": "/storage/releases/posters/8452/TZmbgSnfXHEjQaeu3yDVkbNVWUs93Wc9.jpg",
+  "optimized": {
+   "src": "/storage/releases/posters/8452/RN4oqgBiCnFwJHQCJ5JE8ZJuvNbioxQa.webp",
+   "preview": "/storage/releases/posters/8452/RN4oqgBiCnFwJHQCJ5JE8ZJuvNbioxQa.webp",
+   "thumbnail": "/storage/releases/posters/8452/SGNbbiOrKQebDOkuhTVZIXr8f9AnDPMK.webp"
+  }
+ },
+ "episodes_total": 366,
+ "average_duration_of_episode": 25,
+ "is_ongoing": false,
+ "is_blocked_by_geo": false,
+ "episodes": [
+  {
+   "id": "95ca023a-789e-11ec-ae92-0242ac120002",
+   "name": null,
+   "ordinal": 1,
+   "opening": {
+    "stop": 100,
+    "start": 1
+   },
+   "ending": {
+    "stop": null,
+    "start": null
+   },
+   "hls_480": "https://cache.libria.fun/videos/media/ts/8452/1/480/156bf19def2215d27eb06df9fe793875.m3u8?countryIso=RS&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_720": "https://cache.libria.fun/videos/media/ts/8452/1/720/366fe6574079d30788ba8c4a8bc7ce66.m3u8?countryIso=RS&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_1080": "https://cache.libria.fun/videos/media/ts/8452/1/1080/4ba2ae1a23d0ff7e15851e27fee3f2c9.m3u8?countryIso=RS&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "duration": 1384
+  },
+  {
+   "id": "95ca02e2-789e-11ec-ae92-0242ac120002",
+   "name": null,
+   "ordinal": 2,
+   "opening": {
+    "stop": 100,
+    "start": 1
+   },
+   "ending": {
+    "stop": null,
+    "start": null
+   },
+   "hls_480": "https://cache.libria.fun/videos/media/ts/8452/2/480/f0821a88ca1e2571c2d719a2bdf978db.m3u8?countryIso=RS&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_720": "https://cache.libria.fun/videos/media/ts/8452/2/720/b4947617142f45da4702dbf3e2f194ec.m3u8?countryIso=RS&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "hls_1080": "https://cache.libria.fun/videos/media/ts/8452/2/1080/17f42099e90d3d6ad1108f602767b944.m3u8?countryIso=RS&isAuthorized=0&isWithVideoAds=1&isWithVideoAdsAlways=1",
+   "duration": 1384
+  }
+ ]
+}

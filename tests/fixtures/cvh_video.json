@@ -1,0 +1,19 @@
+{
+ "unitedVideoId": 10417869052469,
+ "duration": 2966,
+ "failoverHost": "vd737.okcdn.ru",
+ "thumbUrl": "https://iv.okcdn.ru/videoPreview?id=9153116637749&type=32&idx=9&tkn=xye0-tmln-Vq41b8Dn-V-Mlrsas",
+ "sources": {
+  "hlsUrl": "https://vd576.okcdn.ru/video.m3u8?cmd=videoPlayerCdn&expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ch=-536166974&ms=185.226.55.98&type=2&sig=mpGSrnirsPA&ct=8&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "dashUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ch=-1610167797&ms=185.226.55.98&type=1&sig=HSErTLMhb7Y&ct=6&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "mpegQhdUrl": "",
+  "mpeg2kUrl": "",
+  "mpeg4kUrl": "",
+  "mpegHighUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ms=185.226.55.98&type=3&sig=Ng6Jryj8CWk&ct=0&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "mpegFullHdUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ms=185.226.55.98&type=5&sig=vU5mIH4VGts&ct=0&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "mpegMediumUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ms=185.226.55.98&type=2&sig=tRK01CPSA3Y&ct=0&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "mpegLowUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ms=185.226.55.98&type=1&sig=h5Gv1F5Pnwg&ct=0&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "mpegLowestUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ms=185.226.55.98&type=0&sig=xZu2RSsO5q4&ct=0&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749",
+  "mpegTinyUrl": "https://vd576.okcdn.ru/?expires=1788808452794&srcIp=87.116.135.57&pr=90&srcAg=CHROME&ms=185.226.55.98&type=4&sig=-36HP-8rQZs&ct=0&urls=95.163.35.14&clientType=46&zs=43&id=9153116637749"
+ }
+}

@@ -1,0 +1,137 @@
+{
+ "titleName": "Истребитель демонов: Собрание высших лун и деревня кузнецов",
+ "isSerial": true,
+ "items": [
+  {
+   "cvhId": "0199a529-ace1-7630-9a5c-a69880e4adb6",
+   "vkId": "10417869052469",
+   "voiceStudio": "AniDub Online",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "0191526f-0f79-7e39-a050-888d764a2273",
+   "vkId": "7043868678752",
+   "voiceStudio": "AnilibriaTV",
+   "voiceType": "Неизвестный",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "0191528b-25a6-72f7-a36d-9ef5a9ab63a9",
+   "vkId": "7583960750698",
+   "voiceStudio": "Dream Cast",
+   "voiceType": "Неизвестный",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "019174e7-d6e3-7755-9511-35e03dad8c64",
+   "vkId": "7604042816106",
+   "voiceStudio": "Кладбище топовых релизов",
+   "voiceType": "Неизвестный",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "0191877f-4610-7b9f-8083-0287214c9767",
+   "vkId": "7620443855466",
+   "voiceStudio": "AniBaza",
+   "voiceType": "Неизвестный",
+   "season": 1,
+   "episode": 1
+  },
+  {
+   "cvhId": "0199a529-ad82-706e-970a-9912fd4cceb1",
+   "vkId": "10417890023989",
+   "voiceStudio": "AniDub Online",
+   "voiceType": "Многоголосый",
+   "season": 1,
+   "episode": 2
+  }
+ ],
+ "trailers": null,
+ "ads": {
+  "vast": {
+   "preroll": [
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldt&p2=juhq",
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldz&p2=juhq"
+   ],
+   "prerolls": [
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldt&p2=juhq",
+     "priority": 0
+    },
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldz&p2=juhq",
+     "priority": 1
+    }
+   ],
+   "pauseroll": [
+    "https://yandex.ru/ads/adfox/14677041/getCode?p1=dplef&p2=juhq"
+   ],
+   "pauserolls": [
+    {
+     "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dplef&p2=juhq",
+     "priority": 0
+    }
+   ],
+   "midroll": null
+  },
+  "yad": {
+   "partnerId": 747,
+   "category": 0,
+   "preroll": [
+    {
+     "ap": {
+      "ownerId": "264341",
+      "p1": "dibbw",
+      "p2": "hrhx",
+      "partner-stat-id": "747"
+     }
+    }
+   ]
+  }
+ },
+ "vast": {
+  "preroll": [
+   "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldt&p2=juhq",
+   "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldz&p2=juhq"
+  ],
+  "prerolls": [
+   {
+    "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldt&p2=juhq",
+    "priority": 0
+   },
+   {
+    "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dpldz&p2=juhq",
+    "priority": 1
+   }
+  ],
+  "pauseroll": [
+   "https://yandex.ru/ads/adfox/14677041/getCode?p1=dplef&p2=juhq"
+  ],
+  "pauserolls": [
+   {
+    "url": "https://yandex.ru/ads/adfox/14677041/getCode?p1=dplef&p2=juhq",
+    "priority": 0
+   }
+  ],
+  "midroll": null
+ },
+ "yad": {
+  "partnerId": 747,
+  "category": 0,
+  "preroll": [
+   {
+    "ap": {
+     "ownerId": "264341",
+     "p1": "dibbw",
+     "p2": "hrhx",
+     "partner-stat-id": "747"
+    }
+   }
+  ]
+ }
+}

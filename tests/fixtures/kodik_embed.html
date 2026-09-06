@@ -1,0 +1,371 @@
+  <!--
+  Чтобы получить доступ к базе фильмов с данным плеером, пишите на почту: support@kodikres.com
+  -->
+<!doctype html>
+<html>
+<head>
+  <title>Kodik Player</title>
+  <link href="/assets/images/favicon.png" rel="shortcut icon">
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1" name="viewport" >
+  <script type="text/javascript">
+    var type = "seria";
+    var videoId = "1304528";
+    var urlParams = '{"d":"animego.org","d_sign":"5d80cb3992f686af2881246d6d54ff5f78e17d2e2975eea271e7df623aece408:2609080714","pd":"kodikplayer.com","pd_sign":"8f242d04f4b65f10fa0ccccead49ded0e12aeced9cc4ba0faecc7c6f3bb16b90:2609080714","ref":"https%3A%2F%2Fanimego.org%2F","ref_sign":"f86b8d48ef2dc0cfa0b59eb2ed58479bc05e22091fbd6008074cb6a47d807c45:2609080714","translations":false,"advert_debug":true,"min_age":16,"first_url":false}';
+    var autoResume = false;
+    var fullscreenLockOrientation = true;
+    var assetHost = '';
+
+    var translationId = 735;
+    var translationTitle = "2x2";
+    var cdnCheckLink = "https://cloud.solodcdn.com/test/d787ca5deff07b1ec61b4cb64414bbde:2026090402/g";
+  </script>
+
+  <link rel="stylesheet"  href="/assets/css/app.player.fdde01c2ebdd5cd677e6ba8f4748a8893666154f57417ecb3c18df03e374fb6a.css" />
+  <script type="text/javascript"  src="/assets/js/app.player_single.9abf69e8fcd08ec00343f70a42b529a07f728312fe4d74d23d8932a7b288d67f.js"></script>
+</head>
+<body class=" ">
+  <div class="main-box">
+    <style>
+  .resume-button { color: rgba(255, 255, 255, 0.75); }
+  .resume-button:hover { background-color: #171717; }
+  .resume-button { border-radius: 3px; }
+  .active-player .resume-button { border-radius: 3px; }
+
+
+  .resume-button {
+    background-color: rgba(23, 23, 23, 0.8);
+  }
+
+
+
+  .resume-info {
+    bottom: 50px;
+    padding: 5px 10px;
+    background-color: rgba(23, 23, 23, 0.9);
+    border-radius: 3px;
+  }
+
+  .resume-button:hover .resume-info { bottom: 40px; }
+
+  .resume-info::after {
+    position: absolute;
+    content: "";
+    width: 0;
+    height: 0;
+    display: block;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid rgba(23, 23, 23, 0.9);
+    bottom: -7px;
+    left: calc(50% - 7px);
+  }
+
+</style>
+
+<style>
+  .movie-panel, .movie-translations-box select { color: #fff; }
+
+  .movie-translations-box .select-button, .movie-translations-box select, .movie-translations-box.mobile:hover select,
+  .movie-translations-box.mobile:hover .select-button { background-color: #171717; }
+  .movie-translations-box .select-button svg .fill { fill: #fff; }
+
+  .movie-translations-box:hover select, .movie-translations-box:hover .select-button,
+  .movie-translations-box.active select, .movie-translations-box.active .select-button,
+  .movie-translations-box .dropdown-content .item, .movie-translations-box.mobile:active select,
+  .movie-translations-box.mobile:active .select-button { background-color: #242424; }
+
+  .movie-translations-box .dropdown-content .item:hover { background-color: #303030; }
+  .mobile .movie-translations-box .dropdown-content .item:hover { background-color: #242424; }
+  .mobile .movie-translations-box .dropdown-content .item:active { background-color: #303030; }
+
+  .movie-translations-box .dropdown-content .item.selected { color: rgba(255, 255, 255, 0.5); }
+  .movie-translations-box .dropdown-content .item.selected:hover,
+  .movie-translations-box .dropdown-content .item.selected:active, .movie-translations-box .search-block { background-color: #242424; }
+
+  .movie-panel .dropdown-content::-webkit-scrollbar { background-color: #292929 }
+  .movie-panel .dropdown-content::-webkit-scrollbar-thumb { background-color: #424242 }
+  .movie-panel .dropdown-content::-webkit-scrollbar-thumb:hover { background-color: #969696 }
+
+  .select-button .subtitle-icon, .dropdown-content .subtitle-icon { background-color: #4a4a4a }
+
+  .movie-translations-box .dropdown { border-radius: 0 0 3px 3px; }
+  .movie-translations-box .select-button, .movie-translations-box select { border-radius: 3px; }
+  .movie-translations-box.active .select-button, .movie-translations-box.active select { border-radius: 3px 3px 0 0; }
+
+  .active-player .movie-panel, .active-player .movie-translations-box select { color: #fff; }
+
+  .active-player .movie-translations-box .select-button, .active-player .movie-translations-box select,
+  .active-player .movie-translations-box.mobile:hover select,
+  .active-player .movie-translations-box.mobile:hover .select-button { background-color: #161616; }
+  .active-player .movie-translations-box .select-button svg .fill { fill: #fff; }
+
+  .active-player .movie-translations-box:hover select, .active-player .movie-translations-box:hover .select-button,
+  .active-player .movie-translations-box.active select, .active-player .movie-translations-box.active .select-button,
+  .active-player .movie-translations-box .dropdown-content .item, .active-player .movie-translations-box.mobile:active select,
+  .active-player .movie-translations-box.mobile:active .select-button { background-color: #232323; }
+
+  .active-player .movie-translations-box .dropdown-content .item:hover { background-color: #2f2f2f; }
+  .active-player.mobile .movie-translations-box .dropdown-content .item:hover { background-color: #232323; }
+  .active-player.mobile .movie-translations-box .dropdown-content .item:active { background-color: #2f2f2f; }
+
+  .active-player .movie-translations-box .dropdown-content .item.selected { color: rgba(255, 255, 255, 0.5); }
+  .active-player .movie-translations-box .dropdown-content .item.selected:hover,
+  .active-player .movie-translations-box .dropdown-content .item.selected:active { background-color: #232323; }
+
+  .active-player .select-button .subtitle-icon, .active-player .dropdown-content .subtitle-icon { background-color: #494949 }
+
+  .active-player .movie-translations-box .dropdown { border-radius: 0 0 3px 3px; }
+  .active-player .movie-translations-box .select-button, .movie-translations-box select { border-radius: 3px; }
+  .active-player .movie-translations-box.active .select-button, .movie-translations-box.active select { border-radius: 3px 3px 0 0; }
+</style>
+
+      <!-- RS | XX -->
+
+<style>
+  .player_box { background-color: #000; }
+  .play_button { width: 88px; height: 88px; }
+  .play_button svg .fill { fill: #fefefe; }
+  .play_button svg .stroke { stroke: #fefefe; }
+  .play_button:hover svg .fill { fill: #fefefe; }
+  .play_button:hover svg .stroke { stroke: #fefefe; }
+
+    .play_loading svg .bg { fill: #e4e6e4; }
+    .play_loading svg .animated { fill: #a4a6a4; }
+
+    .play_button_loading {
+      background-color: #fff;
+      border-radius: 3px;
+    }
+
+  .share_button .fill { fill: #fff; }
+  .share_button {
+    background-color: #171717;
+    border-radius: 3px;
+  }
+  .share_button:after, .share_button:hover { background-color: #242424; }
+  .share_button:after {
+    color: #fff;
+    border-radius: 3px;
+  }
+
+  .fp-controls, .fp-timeline-wrapper, .fp-play-icon, .fp-pause-icon, .fp-x-fullscreen { background-color: #161616; }
+  .fp-play-icon .fp-fill, .fp-pause-icon  .fp-fill, .fp-x-fullscreen .fp-fill,
+  .fp-quality svg, .fp-volume-icon svg .fp-fill, .fp-playback-settings .fp-fill, .fp-subtitles span svg, .fp-subtitles-dropdown .button svg,
+  .fp-subtitles-dropdown .settings-content svg .fill, .ps-dropdown .fp-fill, .fp-chromecast.fp-icon .fill, .fp-airplay.fp-icon .fill { fill: #fff }
+  .ps-dropdown .rangeslider__handle, .ps-dropdown .rangeslider__fill { background-color: #fff; }
+  .fp-progress, .fp-volumeslider em.fp-color, .fp-quality.hd span:before, .fp-subtitles.chosen::after, .fp-playback-settings.changed::before { background-color: #00ADEF; }
+  .fp-play-icon:hover, .fp-pause-icon:hover { background-color: #00ADEF; }
+  .fp-timeline { background-color: #282828; }
+  .fp-x-buffer { background-color: #626262; }
+  .fp-volumeslider em { background-color: rgba(0, 173, 239, 0.4); }
+  .fp-elapsed, .fp-duration, .fp-quality, .fp-quality.hd span:before, .fp-subtitles { color: #fff; }
+  .not-mobile .fp-x-fullscreen:hover, .mobile .fp-x-fullscreen:active, .fp-quality-dropdown div, .fp-subtitles-dropdown > div,
+  .active-quality-dropdown .fp-quality, .active-subtitles-dropdown .fp-subtitles, .fp-quality:hover, .fp-playback-settings:hover, .active-ps-dropdown .fp-playback-settings, .fp-quality-dropdown div.current:hover, .fp-subtitles:hover, .fp-subtitles-dropdown .items div.current:hover, .player-tooltip, .ps-dropdown, .ps-dropdown .option.current:hover { background-color: #232323; }
+  .fp-quality-dropdown div.blocked,  .fp-quality-dropdown div.blocked:hover { background-color: #0e0e0e; }
+  .fp-quality-dropdown div.current, .fp-quality-dropdown div.blocked, .fp-subtitles-dropdown .items div.current, .ps-dropdown .option.current { color: rgba(255, 255, 255, 0.5); }
+  .fp-quality-dropdown div:hover, .fp-subtitles-dropdown .items div:hover, .fp-subtitles-dropdown .settings-header:hover,
+  .fp-subtitles-dropdown .settings-header.shown, .ps-dropdown .options:hover, .ps-dropdown .option:hover, .ps-dropdown .slider-button .title:hover, .ps-dropdown .top-title .custom:hover { background-color: #2f2f2f; }
+  .fp-quality-dropdown div.hd:after { color: #00ADEF; }
+  .fp-quality-dropdown, .fp-quality-dropdown div:first-child { border-radius: 3px 3px 0 0; }
+  .player-tooltip { color: rgba(255, 255, 255, 0.8); }
+  .ps-dropdown { color: rgba(255, 255, 255, 0.9); }
+  .ps-dropdown .top-title { border-color: rgba(255, 255, 255, 0.15); }
+  .ps-dropdown .rangeslider--horizontal { background-color: rgba(255, 255, 255, 0.15); }
+  .ps-dropdown, .ps-dropdown > div > div:first-child { border-radius: 3px 3px 0 0; }
+  .ps-dropdown .slider .info .value { border: 1px dashed rgba(255, 255, 255, 0.3); }
+  .ps-dropdown .slider .info .confirm { border: 1px solid rgba(255, 255, 255, 0.2); }
+  .ps-dropdown .slider .info .confirm:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+  .ps-dropdown > div::-webkit-scrollbar { background-color: #282828 }
+  .ps-dropdown > div::-webkit-scrollbar-thumb { background-color: #414141 }
+  .ps-dropdown > div::-webkit-scrollbar-thumb:hover { background-color: #959595 }
+
+  .fp-subtitles-dropdown .subtitles-settings .header { border-bottom-color: #2f2f2f; }
+
+  .fp-share_button .fill { fill: #fff; }
+  .fp-share_button {
+    background-color: #161616;
+    border-radius: 3px;
+  }
+  .fp-share_button:after, .fp-share_button:hover { background-color: #232323; }
+  .fp-share_button:after {
+    color: #fff;
+    border-radius: 3px;
+  }
+
+  .fp-controls { border-radius: 3px 0 0 3px; }
+  .fp-x-fullscreen { border-radius: 0 3px 3px 0; }
+  .fp-play-icon, .fp-pause-icon { border-radius: 3px; }
+</style>
+
+
+
+<script src="/adsbygoogle.js"></script>
+
+<script>
+  
+  var advertDebug = true;
+  
+
+  var domain = "animego.org";
+  var d_sign = "5d80cb3992f686af2881246d6d54ff5f78e17d2e2975eea271e7df623aece408:2609080714";
+  var pd = "kodikplayer.com";
+  var pd_sign = "8f242d04f4b65f10fa0ccccead49ded0e12aeced9cc4ba0faecc7c6f3bb16b90:2609080714";
+  var ref = "https://animego.org/";
+  var ref_sign = "f86b8d48ef2dc0cfa0b59eb2ed58479bc05e22091fbd6008074cb6a47d807c45:2609080714";
+  var user_ip = "87.116.135.57";
+  var advertScript = null;
+  var mediaGenre = "anime";
+  var translationId = 735;
+  var translationTitle = "2x2";
+  var country = "RS";
+
+  var customization = true;
+  var rate = false;
+
+  var share_button = "<div class=\"share_button\"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 57.884 57.884' width='16' height='16'><path d='M46 37c-3 0-5.8 1.3-7.7 3.4l-16.6-8c.4-1 .6-2.2.6-3.5 0-1.3-.2-2.5-.6-3.6l16.6-8c2 2 4.6 3.5 7.7 3.5 5.7 0 10.4-4.8 10.4-10.6C56.4 4.7 51.7 0 46 0c-5.8 0-10.5 4.7-10.5 10.4 0 .6 0 1 .2 1.6L18 20.5c-1.7-1.2-3.8-2-6-2C6 18.5 1.4 23.2 1.4 29S6 39.3 12 39.3c2.2 0 4.3-.8 6-2l17.7 8.4-.2 1.7C35.5 53.2 40.2 58 46 58c5.7 0 10.4-4.8 10.4-10.5C56.4 41.7 51.7 37 46 37z' class='fill'/></svg></div>";
+
+  var share_copy_links = true;
+
+
+  var a_detect = false;
+  var adult = false;
+  var eng_color = "blue";
+  var auto_switch_episode = false;
+  var fullscreenLockOrientation = true
+
+  var minAge = {
+    enabled: true,
+    age: 16
+  };
+</script>
+
+
+
+<script>
+    var playerLink = ["/assets/js/app.player.08340a987064137398f4ce509695b20fca35a185b6b7a91c8ff2c4b5753a867c.js"];
+
+  playerSettings.block_c = { manifest: false, other: false };
+
+  playerSettings.p2p_trackers = ["wss://wt.kodik.biz:8436"];
+  playerSettings.forceAdvertCount = true;
+  playerSettings.country = "RS";
+
+  var parsedStartFrom = {};
+  playerSettings.startfrom = parsedStartFrom.startfrom;
+  playerSettings.skip = parsedStartFrom.skipObject;
+
+  playerSettings.skipButton = parseSkipButton("0:30-1:50,22:55-24:05", "anime");
+
+
+  playerSettings.onlyAdvert = false;
+
+
+  var vInfo = {};
+  
+   vInfo.type = 'seria'; 
+   vInfo.hash = '932d5da818729ec5ccc9be7968ee3717'; 
+   vInfo.id = '1304528'; 
+  
+  
+</script>
+
+  <div class="share_button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 57.884 57.884' width='16' height='16'><path d='M46 37c-3 0-5.8 1.3-7.7 3.4l-16.6-8c.4-1 .6-2.2.6-3.5 0-1.3-.2-2.5-.6-3.6l16.6-8c2 2 4.6 3.5 7.7 3.5 5.7 0 10.4-4.8 10.4-10.6C56.4 4.7 51.7 0 46 0c-5.8 0-10.5 4.7-10.5 10.4 0 .6 0 1 .2 1.6L18 20.5c-1.7-1.2-3.8-2-6-2C6 18.5 1.4 23.2 1.4 29S6 39.3 12 39.3c2.2 0 4.3-.8 6-2l17.7 8.4-.2 1.7C35.5 53.2 40.2 58 46 58c5.7 0 10.4-4.8 10.4-10.5C56.4 41.7 51.7 37 46 37z' class='fill'/></svg></div>
+
+<div class="preview-icons">
+    <div class="preview-min-age-icon">
+      16+
+    </div>
+
+</div>
+
+  <div class="resume-button"></div>
+
+<div class="player_box">
+  <div id='get_code_window'>
+    <input id="for-copy" />
+    <div class='close_get_code_window'>
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 212.982 212.982' width='100%' height='100%'><path d='M131.8 106.5l76-76c7-7 7-18.3 0-25.3s-18.4-7-25.4 0l-76 76-75.8-76c-7-7-18.4-7-25.4 0s-7 18.4 0 25.4l76 76-76 75.8c-7 7-7 18.3 0 25.3s18.4 7 25.4 0l76-76 75.8 76c7 7 18.3 7 25.3 0s7-18.3 0-25.3l-76-76z' fill='#FFF' fill-rule='evenodd' clip-rule='evenodd'/></svg>
+    </div>
+    <div class='get_code_main'>
+      <div class='get_code_paddings'>
+        <table>
+            <tr class="get_code_1">
+              <td style='width: 80px;'></td>
+              <td class='get_code_heading'>Получить код</td>
+              <td style='width: 113px;'></td>
+            </tr>
+            <tr class="get_code_1">
+              <td class='get_code_left_info'>Код</td>
+              <td><input value='&lt;iframe src=&quot;https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p&quot; width=&quot;607&quot; height=&quot;360&quot; frameborder=&quot;0&quot; AllowFullScreen allow=&quot;autoplay *; fullscreen *&quot;&gt;&lt;/iframe&gt;' readonly class='get_code_copy_input'/></td>
+              <td><div class='get_code_copy' data-code='&lt;iframe src=&quot;https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p&quot; width=&quot;607&quot; height=&quot;360&quot; frameborder=&quot;0&quot; AllowFullScreen allow=&quot;autoplay *; fullscreen *&quot;&gt;&lt;/iframe&gt;'>копировать</div></td>
+            </tr>
+            <tr class="get_code_1">
+              <td class='get_code_left_info'>Ссылка</td>
+              <td><input value='https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p' readonly class='get_code_copy_input'/></td>
+              <td><div class='get_code_copy' data-code='https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p'>копировать</div></td>
+            </tr>
+          <tr>
+            <td></td>
+            <td class='get_code_heading' colspan="2">Получить доступ к базе</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td class='get_code_info' colspan="2">Подключение к базе бесплатное. Если хотите получить доступ к нашей постоянно обновляющейся базе с множеством фильмов и сериалов, напишите письмо на <span>support@kodikres.com</span>, в котором укажите ваш сайт.</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="play_background">
+  <a class="play_button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88"><g class="normal fill"><path d="M85.5 2a.51.51 0 0 1 .5.5v83a.51.51 0 0 1-.5.5h-83a.51.51 0 0 1-.5-.5v-83a.51.51 0 0 1 .5-.5h83m0-2h-83A2.51 2.51 0 0 0 0 2.5v83A2.51 2.51 0 0 0 2.5 88h83a2.5 2.5 0 0 0 2.5-2.5v-83A2.51 2.51 0 0 0 85.5 0z"></path><path d="M61 43.82L33.66 28.6a.79.79 0 0 0-.82-.06.84.84 0 0 0-.34.75v30.34a.81.81 0 0 0 .34.74.75.75 0 0 0 .82-.06L61 45.1a.76.76 0 0 0 .48-.65c0-.23-.16-.44-.48-.62z"></path></g><path d="M85.5 0h-83A2.5 2.5 0 0 0 0 2.5v83A2.5 2.5 0 0 0 2.5 88h83a2.5 2.5 0 0 0 2.5-2.5v-83A2.5 2.5 0 0 0 85.5 0zM61 45.1L33.66 60.31a.75.75 0 0 1-.82.06.81.81 0 0 1-.34-.74V29.29a.84.84 0 0 1 .34-.75.79.79 0 0 1 .82.06L61 43.82c.32.18.48.39.48.62a.76.76 0 0 1-.48.66z" class="hover fill"></path></svg></a>
+</div>
+
+<script>
+  $(function () {
+    if (!isIframe() && location.hostname !== "localhost" && location.hostname !== "bs-local.com") {
+      $(".player_box, .share_button, .play_background, .serial-panel, .movie-panel").hide();
+      $("body").append('<div style="height: 100%;" class="promo-error"><table><tr><td><div class="promo-error-box"><div class="message">Извините, но данной страницы не существует</div></div></td></tr></table></div>');
+    }
+  });
+
+
+      var thumbnails = ["//cloud.solodcdn.com/b4c1fafec50c85edde339844cec9c314:2026090707/useruploads/4203027f-aae3-4deb-be3b-84cffcff5114/thumb004.jpg", "//cloud.solodcdn.com/ed25dcf57381d746a667c34ef67e0381:2026090707/useruploads/4203027f-aae3-4deb-be3b-84cffcff5114/thumb003.jpg", "//cloud.solodcdn.com/718bb3a3ddfb944c99b45338aec68e57:2026090707/useruploads/4203027f-aae3-4deb-be3b-84cffcff5114/thumb005.jpg", "//cloud.solodcdn.com/d282f039c4675cdbc0c423cbe02f7513:2026090707/useruploads/4203027f-aae3-4deb-be3b-84cffcff5114/thumb001.jpg", "//cloud.solodcdn.com/9d4a3ca018882ded4fe585784519b28f:2026090707/useruploads/4203027f-aae3-4deb-be3b-84cffcff5114/thumb002.jpg"];
+      if (thumbnails) var playerThumbnails = new PlayerThumbnails(thumbnails, false);
+</script>
+<p></p>
+
+    
+
+
+    <div class="movie-panel" >
+    </div>
+
+      <div class="resume-button"></div>
+    <script>
+  var yaParams = {};
+
+  if (typeof isIframe === "function") yaParams.iframe = isIframe();
+  
+  yaParams.a = true;
+  yaParams.adult = false;
+  yaParams.double_a = true;
+  yaParams.partnership = true;
+  yaParams.share_link = true;
+  yaParams.c_a = "on";
+  yaParams.c_a_bool = true;
+  yaParams.b_a = "on";
+  yaParams.b_a_bool = true;
+  yaParams.y_a = "on";
+  yaParams.y_a_bool = true;
+  yaParams.domain = "animego.org";
+</script>
+
+<!-- Yandex.Metrika counter --> <script type="text/javascript" > (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)}; m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)}) (window, document, "script", "https://cdn.jsdelivr.net/npm/yandex-metrica-watch/tag.js", "ym"); ym(58424476, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true, params:yaParams }); </script> <noscript><div><img src="https://mc.yandex.ru/watch/58424476" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,148 @@
+{
+ "status": "success",
+ "data": {
+  "name": "Зеленая миля",
+  "original_name": "The Green Mile",
+  "alternative_name": null,
+  "year": 1999,
+  "category": 1,
+  "id_kp": 435,
+  "alternative_id_kp": null,
+  "id_imdb": "tt0120689",
+  "id_tmdb": 497,
+  "id_world_art": null,
+  "token_movie": "5322bb9c3c688bcb24cb5936f28629",
+  "country": "США",
+  "genre": "драма, фэнтези, криминал",
+  "actors": "Том Хэнкс, Дэвид Морс, Бонни Хант, Майкл Кларк Дункан, Джеймс Кромуэлл, Майкл Джитер, Грэм Грин, Даг Хатчисон, Сэм Рокуэлл, Барри Пеппер, Джеффри ДеМанн, Патриша Кларксон, Гарри Дин Стэнтон, Даббс Грир, Ив Брент, Уильям Сэдлер, Мак Майлз, Рай Таско, Эдри Уорнер, Паула Малкомсон, Кристофер Джоэль Айвз, Эванн Драклер, Бэйли Дракер, Брайан Либби, Брент Бриско, Билл Маккинни, Гэри Синиз, Рэйчел Сингер, Скотти Левенуорф, Кэтлин Левенуорф, Билл Грэттон, Ди Крокстон, Ребекка Клингер, Гари Имхофф, Ван Эпперсон, Дэвид Э. Браунинг, Фред Астер, Томми Барнс, Билл Крэддок, Кристофер Гринвуд, Уэс Холл, Дэниэл Д. Харрис, Фил Хоун, Марк Хинеан, Джуди Херрера, Тед Холлис, Дон Лэнгли, Роберт Мэлоун, Арнольд Монти, Джинджер Роджерс",
+  "directors": "Фрэнк Дарабонт",
+  "producers": "Фрэнк Дарабонт, Дэвид Валдес",
+  "premiere_ru": "2000-04-18",
+  "premiere": "1999-12-06",
+  "age_restrictions": 18,
+  "rating_mpaa": "r",
+  "rating_kp": 9.079,
+  "rating_imdb": 8.6,
+  "time": "03:09",
+  "tagline": "Пол Эджкомб не верил в чудеса. Пока не столкнулся с одним из них",
+  "poster": "https://avatars.mds.yandex.net/get-kinopoisk-image/1599028/4057c4b8-8208-4a04-b169-26b0661453e3/600x900",
+  "description": "Пол Эджкомб — начальник блока смертников в тюрьме «Холодная гора», каждый из узников которого однажды проходит «зеленую милю» по пути к месту казни. Пол повидал много заключённых и надзирателей за время работы. Однако гигант Джон Коффи, обвинённый в страшном преступлении, стал одним из самых необычных обитателей блока.",
+  "quality": "BDRip",
+  "translation": "Профессиональный многоголосый, Сербин, Гаврилов, Живов, Одноголосый закадровый, Матвеев, Украинский, Оригинальный, Субтитры, Укр. Субтитры, Дублированный, Гоблин",
+  "translation_iframe": {
+   "87": {
+    "name": "Профессиональный многоголосый",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=87&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "77": {
+    "name": "Сербин",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=77&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "62": {
+    "name": "Гаврилов",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=62&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "68": {
+    "name": "Живов",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=68&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "75": {
+    "name": "Одноголосый закадровый",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=75&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "71": {
+    "name": "Матвеев",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=71&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "154": {
+    "name": "Украинский",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=154&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "93": {
+    "name": "Оригинальный",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=93&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "79": {
+    "name": "Субтитры",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=79&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "237": {
+    "name": "Укр. Субтитры",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=237&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "66": {
+    "name": "Дублированный",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=66&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2024-07-05 13:52:48",
+    "uhd": true,
+    "lgbt": false
+   },
+   "63": {
+    "name": "Гоблин",
+    "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&translation=63&token=04941a9a3ca3ac16e2b4327347bbc1",
+    "quality": "BDRip",
+    "adv": false,
+    "date": "2020-04-26 20:27:01",
+    "uhd": false,
+    "lgbt": false
+   }
+  },
+  "iframe": "https://miyagi-as.stravers.live/?token_movie=5322bb9c3c688bcb24cb5936f28629&token=04941a9a3ca3ac16e2b4327347bbc1",
+  "iframe_trailer": "https://miyagi-as.stravers.live/t/?token_movie=5322bb9c3c688bcb24cb5936f28629&token=04941a9a3ca3ac16e2b4327347bbc1",
+  "lgbt": false,
+  "uhd": true,
+  "available_directors_cut": false
+ }
+}
