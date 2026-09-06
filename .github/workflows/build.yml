@@ -172,6 +172,10 @@ jobs:
           git push -f origin latest
           if gh release list --json tagName --jq '.[].tagName' | grep -qx latest; then
             gh release edit latest --prerelease --title "Latest build (main)" --notes "$NOTES"
+            # --clobber only replaces files of the same name, so a version bump
+            # would leave the previous build's wheel sitting next to the new one.
+            # "Latest" has to mean one build, not a pile of them.
+            gh release view latest --json assets --jq '.assets[].name'               | xargs -r -I{} gh release delete-asset latest {} --yes
           else
             gh release create latest --prerelease --title "Latest build (main)" --notes "$NOTES"
           fi
