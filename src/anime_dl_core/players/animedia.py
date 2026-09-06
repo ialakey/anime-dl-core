@@ -16,7 +16,7 @@
    (их до сих пор отдают некоторые агрегаторы) не работают: домен отвечает
    бесконечным редиректом на самого себя. Рабочие ссылки на плеер лежат на
    странице тайтла amd.online — их удобно доставать помощником
-   :class:`anime_players.sources.Animedia`.
+   :class:`anime_dl_core.sources.Animedia`.
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ class AnimediaPlayer(BasePlayer):
 
     Пример::
 
-        from anime_players import AnimediaPlayer
+        from anime_dl_core import AnimediaPlayer
 
         with AnimediaPlayer() as player:
             result = player.extract("https://aser.pro/vod/20182")   # можно и просто 20182

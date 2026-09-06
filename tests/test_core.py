@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from conftest import fixture
 
-from anime_players import (
+from anime_dl_core import (
     AniboomPlayer,
     BasePlayer,
     KodikPlayer,
@@ -18,7 +18,7 @@ from anime_players import (
     player_names,
     registry,
 )
-from anime_players.utils import (
+from anime_dl_core.utils import (
     absolute_url,
     caesar_shift,
     decode_kodik_url,
@@ -199,8 +199,8 @@ def test_players_declare_metadata():
 
 # -- помощник AnimeGO ----------------------------------------------------
 def test_animego_search_parses_cards():
-    from anime_players.http import Response
-    from anime_players.sources import AnimeGo
+    from anime_dl_core.http import Response
+    from anime_dl_core.sources import AnimeGo
 
     card = (
         '<div class="ani-grid__item g-col-6">'
@@ -232,8 +232,8 @@ def test_animego_search_parses_cards():
 
 
 def test_animego_search_reports_empty_result():
-    from anime_players.http import Response
-    from anime_players.sources import AnimeGo
+    from anime_dl_core.http import Response
+    from anime_dl_core.sources import AnimeGo
 
     class Client:
         def get(self, url, **kwargs):

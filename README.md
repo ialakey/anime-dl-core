@@ -3,6 +3,7 @@
 **English** · [Русский](README.ru.md)
 
 [![CI](https://github.com/ialakey/anime-dl-core/actions/workflows/build.yml/badge.svg)](https://github.com/ialakey/anime-dl-core/actions/workflows/build.yml)
+[![PyPI](https://img.shields.io/pypi/v/anime-dl-core)](https://pypi.org/project/anime-dl-core/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -14,10 +15,10 @@ The library does one thing: players. You give it an embed URL, you get back a
 list of streams (HLS / DASH / MP4) with resolutions and the headers without
 which the CDN will not serve the file. Everything else — search, catalogues,
 ratings — is deliberately out of scope; small optional helpers live in
-[`anime_players.sources`](#finding-a-player-link).
+[`anime_dl_core.sources`](#finding-a-player-link).
 
 ```python
-import anime_players as ap
+import anime_dl_core as ap
 
 result = ap.extract("https://aniboom.one/embed/9G1MJ6NMV8z?episode=1&translation=30")
 
@@ -74,13 +75,17 @@ published on VK and are handled by the `vk` player.
 ## Installation
 
 ```bash
+pip install anime-dl-core                # plain install (requests only)
+pip install "anime-dl-core[async]"       # + async mode (aiohttp)
+pip install "anime-dl-core[socks]"       # + socks5 proxy support
+```
+
+From source, for development and the test suite:
+
+```bash
 git clone https://github.com/ialakey/anime-dl-core.git
 cd anime-dl-core
-
-pip install -e .                 # plain install (requests only)
-pip install -e ".[async]"        # + async mode (aiohttp)
-pip install -e ".[socks]"        # + socks5 proxy support
-pip install -e ".[dev]"          # + pytest for the test suite
+pip install -e ".[async,dev]"
 ```
 
 There is exactly one required dependency — `requests`. HTML is parsed with
@@ -88,14 +93,14 @@ regular expressions, so neither `bs4` nor `lxml` is needed.
 
 Python 3.9+.
 
-Prebuilt wheels are attached to every
+The same wheel and sdist are attached to every
 [release](https://github.com/ialakey/anime-dl-core/releases), together with the
 SHA-256 of each file and the commit they were built from.
 
 ## Quick start
 
 ```python
-import anime_players as ap
+import anime_dl_core as ap
 
 # 1. The player is detected from the URL
 result = ap.extract("https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p")
@@ -188,7 +193,7 @@ Methods: `ffmpeg_args(output)`, `ffmpeg_command(output)`, `to_dict()`, plus the
 ### Aniboom
 
 ```python
-from anime_players import AniboomPlayer
+from anime_dl_core import AniboomPlayer
 
 with AniboomPlayer() as player:
     result = player.extract(
@@ -208,7 +213,7 @@ Also useful: `AniboomPlayer.embed_url(video_id, episode=…, translation=…)` a
 ### CVH (CdnVideoHub)
 
 ```python
-from anime_players import CvhPlayer
+from anime_dl_core import CvhPlayer
 
 with CvhPlayer() as player:
     # every episode and dub
@@ -229,7 +234,7 @@ files from 144p to 1080p. The publisher parameters are configurable:
 ### Kodik
 
 ```python
-from anime_players import KodikPlayer
+from anime_dl_core import KodikPlayer
 
 with KodikPlayer() as player:
     result = player.extract(
@@ -253,7 +258,7 @@ fixes it.
 ### Sibnet
 
 ```python
-from anime_players import SibnetPlayer
+from anime_dl_core import SibnetPlayer
 
 with SibnetPlayer() as player:
     result = player.extract("2589828")             # the bare id works too
@@ -270,7 +275,7 @@ because the signed address is short-lived and bound to your IP.
 ### Animedia
 
 ```python
-from anime_players import AnimediaPlayer
+from anime_dl_core import AnimediaPlayer
 
 with AnimediaPlayer() as player:
     result = player.extract("https://aser.pro/vod/20182")   # or just 20182
@@ -289,7 +294,7 @@ Player links live on the title page at amd.online; the
 ### AniLibria (AniLiberty)
 
 ```python
-from anime_players import AnilibriaPlayer
+from anime_dl_core import AnilibriaPlayer
 
 with AnilibriaPlayer() as player:
     print(player.search("Bleach")[:1])                 # find the release alias
@@ -305,7 +310,7 @@ needed). A mirror can be set with
 ### VK Video
 
 ```python
-from anime_players import VkPlayer
+from anime_dl_core import VkPlayer
 
 with VkPlayer() as player:
     # an anime episode in the SovetRomantica VK community
@@ -345,7 +350,7 @@ The team's site is currently offline (see the [table above](#supported-players))
 so the example uses a real embed page from the Wayback Machine:
 
 ```python
-from anime_players import SovetRomanticaPlayer
+from anime_dl_core import SovetRomanticaPlayer
 
 archived = ("https://web.archive.org/web/20240905174049id_/"
             "https://sovetromantica.com/embed/episode_1073_1-dubbed")
@@ -381,8 +386,8 @@ A small AnimeGO helper ships with the library — just enough for an end-to-end
 scenario:
 
 ```python
-from anime_players.sources import AnimeGo
-import anime_players as ap
+from anime_dl_core.sources import AnimeGo
+import anime_dl_core as ap
 
 with AnimeGo() as site:                    # AnimeGo(mirror="animego.me", proxy=...)
     anime = site.search("Магическая битва")[0]
@@ -405,8 +410,8 @@ Runnable script: `examples/02_animego_pipeline.py`.
 The second helper is the **Animedia** site (amd.online):
 
 ```python
-from anime_players.sources import Animedia
-import anime_players as ap
+from anime_dl_core.sources import Animedia
+import anime_dl_core as ap
 
 with Animedia() as site:                       # Animedia(base_url="https://new-domain")
     anime = site.search("Боруто")[0]
@@ -431,7 +436,7 @@ Alloha (`api.alloha.tv`) is not a player in this library's sense but a
 description, the dubs, seasons with episodes and a ready iframe link.
 
 ```python
-from anime_players.sources import Alloha
+from anime_dl_core.sources import Alloha
 
 with Alloha() as alloha:                             # Alloha(token="your token")
     anime = alloha.find(name="Атака титанов")        # or find(kp=749374), find(imdb="tt2560140")
@@ -459,12 +464,12 @@ Runnable script with Animedia and Alloha: `examples/07_animedia_alloha.py`.
 ## Async
 
 ```bash
-pip install -e ".[async]"
+pip install "anime-dl-core[async]"
 ```
 
 ```python
 import asyncio
-import anime_players as ap
+import anime_dl_core as ap
 
 async def main():
     # different players in parallel
@@ -489,18 +494,18 @@ Every player has an async twin: `aextract()`, `aplaylist()`, `arelease()`,
 ## Command line
 
 ```bash
-anime-players --list                       # which players are supported
-anime-players https://aniboom.one/embed/9G1MJ6NMV8z
-anime-players 51019 --player cvh --episode 2 --studio AniLibria
-anime-players bleach --player anilibria --episode 1 --best --max-quality 720
-anime-players <url> --json                 # machine-readable output
-anime-players <url> --ffmpeg ep1.mp4       # ready-made ffmpeg command
-anime-players <url> --kind mp4 --proxy socks5://127.0.0.1:9050
-anime-players "https://vk.com/video_ext.php?oid=-33905270&id=456239024" --best --kind mp4
-anime-players -33905270_456239024 --json   # VK also takes the bare id
+anime-dl-core --list                       # which players are supported
+anime-dl-core https://aniboom.one/embed/9G1MJ6NMV8z
+anime-dl-core 51019 --player cvh --episode 2 --studio AniLibria
+anime-dl-core bleach --player anilibria --episode 1 --best --max-quality 720
+anime-dl-core <url> --json                 # machine-readable output
+anime-dl-core <url> --ffmpeg ep1.mp4       # ready-made ffmpeg command
+anime-dl-core <url> --kind mp4 --proxy socks5://127.0.0.1:9050
+anime-dl-core "https://vk.com/video_ext.php?oid=-33905270&id=456239024" --best --kind mp4
+anime-dl-core -33905270_456239024 --json   # VK also takes the bare id
 ```
 
-Without installing: `python -m anime_players <url>`.
+Without installing: `python -m anime_dl_core <url>`.
 
 Sample output:
 
@@ -535,7 +540,7 @@ with ap.KodikPlayer(proxy="http://127.0.0.1:8080", timeout=15) as player:
 socks5 needs the `[socks]` extra. You can also pass a ready client:
 
 ```python
-from anime_players import HttpClient
+from anime_dl_core import HttpClient
 client = HttpClient(proxy="http://127.0.0.1:8080", timeout=10)
 result = ap.AniboomPlayer(client).extract(url)
 ```
@@ -547,8 +552,8 @@ client; everything else (`episode`, `season`, `studio`, `referer`, `resolve`,
 ## Writing your own player
 
 ```python
-from anime_players import BasePlayer, PlayerResult, Stream, StreamKind, register
-from anime_players.utils import search
+from anime_dl_core import BasePlayer, PlayerResult, Stream, StreamKind, register
+from anime_dl_core.utils import search
 
 @register
 class MyPlayer(BasePlayer):
@@ -573,7 +578,7 @@ Full example: `examples/05_custom_player.py`.
 
 ## Errors
 
-Every exception inherits from `AnimePlayersError`:
+Every exception inherits from `AnimeDlCoreError`:
 
 | Exception | Raised when |
 |---|---|
@@ -591,18 +596,18 @@ try:
     result = ap.extract(url)
 except ap.ContentBlocked:
     result = ap.extract(url, proxy="socks5://...")
-except ap.AnimePlayersError as error:
+except ap.AnimeDlCoreError as error:
     print("failed:", error)
 ```
 
 ## Tests
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev]"     # from a source checkout
 
 pytest                                      # 86 offline tests, no network
-ANIME_PLAYERS_LIVE=1 pytest -m live         # 18 live tests (bash)
-$env:ANIME_PLAYERS_LIVE=1; pytest -m live   # the same in PowerShell
+ANIME_DL_CORE_LIVE=1 pytest -m live         # 18 live tests (bash)
+$env:ANIME_DL_CORE_LIVE=1; pytest -m live   # the same in PowerShell
 ```
 
 Offline tests run the parsers against real player responses saved in
@@ -614,7 +619,7 @@ update the constants at the top of `tests/test_live.py`.
 ## How it works inside
 
 ```
-src/anime_players/
+src/anime_dl_core/
     __init__.py       public API
     registry.py       player registry, extract() / extract_async()
     base.py           BasePlayer: clients, URL matching, lifecycle
@@ -672,6 +677,13 @@ How the players work, briefly:
 - The library downloads nothing by itself and bypasses no paywalls: it reads the
   same data an ordinary web player reads in a browser. What you do with it is on
   you — respect copyright and the terms of the sites you use.
+
+## Release process
+
+Releases are cut by CI from a `v*` tag: GitHub release with artifacts and their
+SHA-256, then the upload to PyPI. The steps, and the one-time PyPI setup, are in
+[`docs/releasing.md`](docs/releasing.md). Version history:
+[`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 

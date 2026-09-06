@@ -1,7 +1,7 @@
 """Как добавить свой плеер, не трогая код библиотеки.
 
 Достаточно унаследоваться от BasePlayer, задать домены и реализовать extract().
-После register() ссылка на новый плеер работает через общий anime_players.extract().
+После register() ссылка на новый плеер работает через общий anime_dl_core.extract().
 
 Запуск:
     python examples/05_custom_player.py
@@ -12,9 +12,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
-import anime_players as ap
-from anime_players import BasePlayer, PlayerResult, Stream, StreamKind, register
-from anime_players.utils import search
+import anime_dl_core as ap
+from anime_dl_core import BasePlayer, PlayerResult, Stream, StreamKind, register
+from anime_dl_core.utils import search
 
 FILE_RE = re.compile(r'file\s*:\s*"([^"]+\.m3u8)"')
 
@@ -49,7 +49,7 @@ def main() -> None:
     # Проверим разбор на подставном ответе, без сети
     class FakeClient:
         def get(self, url: str, **kwargs: Any):
-            from anime_players.http import Response
+            from anime_dl_core.http import Response
 
             return Response(200, 'var cfg = {file:"https://cdn.example/master.m3u8"};', url)
 

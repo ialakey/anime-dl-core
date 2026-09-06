@@ -66,7 +66,7 @@ class HttpClient:
     """Синхронный http-клиент на requests.
 
     :param proxy: адрес прокси вида http://host:port или socks5://user:pass@host:port
-        (для socks нужен ``pip install anime-players[socks]``).
+        (для socks нужен ``pip install anime-dl-core[socks]``).
     :param timeout: таймаут одного запроса в секундах.
     :param user_agent: значение заголовка User-Agent.
     :param headers: заголовки, добавляемые ко всем запросам.
@@ -151,7 +151,7 @@ class HttpClient:
 
 
 class AsyncHttpClient:
-    """Асинхронный клиент на aiohttp. Требует ``pip install anime-players[async]``."""
+    """Асинхронный клиент на aiohttp. Требует ``pip install anime-dl-core[async]``."""
 
     def __init__(
         self,
@@ -165,7 +165,7 @@ class AsyncHttpClient:
             import aiohttp  # noqa: F401
         except ImportError as exc:  # pragma: no cover - зависит от окружения
             raise ImportError(
-                "Для асинхронного режима нужен aiohttp: pip install anime-players[async]"
+                "Для асинхронного режима нужен aiohttp: pip install anime-dl-core[async]"
             ) from exc
         self.timeout = timeout
         self.proxy = proxy
@@ -185,7 +185,7 @@ class AsyncHttpClient:
                 except ImportError as exc:  # pragma: no cover
                     raise ImportError(
                         "Для socks-прокси в асинхронном режиме нужен aiohttp-socks: "
-                        "pip install anime-players[socks]"
+                        "pip install anime-dl-core[socks]"
                     ) from exc
                 connector = ProxyConnector.from_url(self.proxy)
             self._session = aiohttp.ClientSession(

@@ -1,10 +1,10 @@
-"""anime-players — получение прямых ссылок на видео из аниме-плееров.
+"""anime-dl-core — получение прямых ссылок на видео из аниме-плееров.
 
 Быстрый старт::
 
-    import anime_players
+    import anime_dl_core
 
-    result = anime_players.extract("https://aniboom.one/embed/9G1MJ6NMV8z?episode=1")
+    result = anime_dl_core.extract("https://aniboom.one/embed/9G1MJ6NMV8z?episode=1")
     stream = result.best(kind="hls")
     print(stream.url)
     print(stream.headers)          # эти заголовки обязательны при скачивании
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from .base import BasePlayer
 from .errors import (
-    AnimePlayersError,
+    AnimeDlCoreError,
     ContentBlocked,
     DecryptionError,
     ExtractionError,
@@ -53,7 +53,7 @@ from .registry import (
     register,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "__version__",
@@ -89,7 +89,7 @@ __all__ = [
     "Response",
     "DEFAULT_USER_AGENT",
     # ошибки
-    "AnimePlayersError",
+    "AnimeDlCoreError",
     "UnsupportedUrl",
     "NetworkError",
     "ServiceError",

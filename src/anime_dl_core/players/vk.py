@@ -47,7 +47,7 @@ class VkPlayer(BasePlayer):
             print(result.best(kind="mp4").url)
 
     Часть видео (приватные, «только для друзей», удалённые) анонимно недоступна —
-    тогда бросается :class:`~anime_players.errors.ContentBlocked`. Для видео,
+    тогда бросается :class:`~anime_dl_core.errors.ContentBlocked`. Для видео,
     закрытых по ссылке, нужен параметр ``hash`` из кода вставки — передайте его
     в ссылке или через :meth:`embed_url`.
     """

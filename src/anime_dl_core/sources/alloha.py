@@ -86,7 +86,7 @@ class Alloha:
 
     Пример::
 
-        from anime_players.sources import Alloha
+        from anime_dl_core.sources import Alloha
 
         with Alloha() as alloha:
             anime = alloha.find(name="Атака титанов")

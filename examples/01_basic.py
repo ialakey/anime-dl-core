@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 
-import anime_players as ap
+import anime_dl_core as ap
 
 DEFAULT_URL = "https://video.sibnet.ru/shell.php?videoid=2589828"
 

@@ -1,4 +1,4 @@
-"""Командная строка: ``anime-players <ссылка>`` или ``python -m anime_players <ссылка>``."""
+"""Командная строка: ``anime-dl-core <ссылка>`` или ``python -m anime_dl_core <ссылка>``."""
 
 from __future__ import annotations
 
@@ -8,21 +8,21 @@ import sys
 from typing import Any, Dict, List, Optional, Sequence
 
 from . import __version__
-from .errors import AnimePlayersError
+from .errors import AnimeDlCoreError
 from .models import PlayerResult
 from .registry import describe_players, extract
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="anime-players",
+        prog="anime-dl-core",
         description="Достаёт прямые ссылки на видео из аниме-плееров "
         "(Aniboom, CVH, Kodik, Sibnet, AniLibria, VK, SovetRomantica).",
         epilog="Примеры:\n"
-        "  anime-players https://aniboom.one/embed/9G1MJ6NMV8z\n"
-        "  anime-players 51019 --player cvh --episode 2 --studio AniLibria\n"
-        "  anime-players bleach --player anilibria --episode 1 --best\n"
-        "  anime-players <ссылка> --ffmpeg episode.mp4",
+        "  anime-dl-core https://aniboom.one/embed/9G1MJ6NMV8z\n"
+        "  anime-dl-core 51019 --player cvh --episode 2 --studio AniLibria\n"
+        "  anime-dl-core bleach --player anilibria --episode 1 --best\n"
+        "  anime-dl-core <ссылка> --ffmpeg episode.mp4",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("url", nargs="?", help="ссылка на плеер (или id/алиас для cvh, anilibria, sibnet)")
@@ -40,7 +40,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--resolve", action="store_true", help="разворачивать редиректы (sibnet)")
     parser.add_argument("--proxy", help="http/socks5 прокси")
     parser.add_argument("--timeout", type=float, default=20.0, help="таймаут запроса, сек (по умолчанию 20)")
-    parser.add_argument("--version", action="version", version=f"anime-players {__version__}")
+    parser.add_argument("--version", action="version", version=f"anime-dl-core {__version__}")
     return parser
 
 
@@ -131,7 +131,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 def run() -> None:  # pragma: no cover - обёртка для точки входа
     try:
         sys.exit(main())
-    except AnimePlayersError as error:
+    except AnimeDlCoreError as error:
         print(f"Ошибка: {error}", file=sys.stderr)
         sys.exit(2)
     except KeyboardInterrupt:

@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from conftest import fixture
 
-from anime_players import errors
-from anime_players.sources import Alloha, Animedia
+from anime_dl_core import errors
+from anime_dl_core.sources import Alloha, Animedia
 
 TITLE_URL = "https://amd.online/14-boruto-novoe-pokolenie-naruto.html"
 

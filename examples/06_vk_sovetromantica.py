@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import sys
 
-import anime_players as ap
+import anime_dl_core as ap
 
 # Серия «Гримгар из пепла и фантазий» с субтитрами SovetRomantica, ВКонтакте
 VK_EPISODE = "https://vk.com/video_ext.php?oid=-33905270&id=456239024"
@@ -88,7 +88,7 @@ def demo_sovetromantica(url: str | None = None) -> None:
     with ap.SovetRomanticaPlayer(base_url="https://web.archive.org", timeout=60) as player:
         try:
             result = player.extract(SR_ARCHIVED)
-        except ap.AnimePlayersError as error:
+        except ap.AnimeDlCoreError as error:
             print(f"  Не получилось: {error}")
             return
     show(result)

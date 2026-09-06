@@ -117,7 +117,7 @@ def extract(url: str, **kwargs: Any) -> PlayerResult:
 
 
 async def extract_async(url: str, **kwargs: Any) -> PlayerResult:
-    """Асинхронный вариант :func:`extract` (нужен ``pip install anime-players[async]``)."""
+    """Асинхронный вариант :func:`extract` (нужен ``pip install anime-dl-core[async]``)."""
     client_kwargs, extract_kwargs = _split_kwargs(kwargs)
     player = get_player_class(url)(**client_kwargs)
     try:

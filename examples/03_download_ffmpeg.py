@@ -13,7 +13,7 @@ import shutil
 import subprocess
 import sys
 
-import anime_players as ap
+import anime_dl_core as ap
 
 
 def main() -> int:

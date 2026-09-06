@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from anime_players import PlayerResult, SkipSegment, Stream, StreamKind, cli
+from anime_dl_core import PlayerResult, SkipSegment, Stream, StreamKind, cli
 
 
 @pytest.fixture

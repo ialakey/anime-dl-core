@@ -17,8 +17,8 @@ from __future__ import annotations
 
 import sys
 
-import anime_players as ap
-from anime_players.sources import Alloha, Animedia
+import anime_dl_core as ap
+from anime_dl_core.sources import Alloha, Animedia
 
 
 def demo_animedia(query: str = "Боруто", episode: int = 1) -> None:

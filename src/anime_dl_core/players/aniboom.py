@@ -28,7 +28,7 @@ class AniboomPlayer(BasePlayer):
 
     Пример::
 
-        from anime_players import AniboomPlayer
+        from anime_dl_core import AniboomPlayer
 
         with AniboomPlayer() as player:
             result = player.extract("https://aniboom.one/embed/9G1MJ6NMV8z?episode=1&translation=30")

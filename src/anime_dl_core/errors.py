@@ -1,13 +1,13 @@
 """Исключения библиотеки.
 
-Все исключения наследуются от :class:`AnimePlayersError`, поэтому в вызывающем
+Все исключения наследуются от :class:`AnimeDlCoreError`, поэтому в вызывающем
 коде достаточно перехватывать его одного.
 """
 
 from __future__ import annotations
 
 __all__ = [
-    "AnimePlayersError",
+    "AnimeDlCoreError",
     "UnsupportedUrl",
     "NetworkError",
     "ServiceError",
@@ -19,19 +19,19 @@ __all__ = [
 ]
 
 
-class AnimePlayersError(Exception):
+class AnimeDlCoreError(Exception):
     """Базовое исключение библиотеки."""
 
 
-class UnsupportedUrl(AnimePlayersError):
+class UnsupportedUrl(AnimeDlCoreError):
     """Ссылка не подходит ни под один известный плеер."""
 
 
-class NetworkError(AnimePlayersError):
+class NetworkError(AnimeDlCoreError):
     """Сетевая ошибка: таймаут, DNS, обрыв соединения, ошибка прокси."""
 
 
-class ServiceError(AnimePlayersError):
+class ServiceError(AnimeDlCoreError):
     """Сервер плеера вернул неожиданный ответ (код != 200, не тот content-type)."""
 
     def __init__(self, message: str, *, status: "int | None" = None, url: "str | None" = None) -> None:
@@ -40,7 +40,7 @@ class ServiceError(AnimePlayersError):
         self.url = url
 
 
-class ExtractionError(AnimePlayersError):
+class ExtractionError(AnimeDlCoreError):
     """Ответ получен, но разобрать его не удалось — вероятно, плеер изменил разметку."""
 
 
@@ -52,9 +52,9 @@ class DecryptionError(ExtractionError):
     """Не удалось расшифровать ссылку (актуально для Kodik)."""
 
 
-class ContentBlocked(AnimePlayersError):
+class ContentBlocked(AnimeDlCoreError):
     """Контент заблокирован: гео-блокировка, возрастное ограничение, правообладатель."""
 
 
-class NotFound(AnimePlayersError):
+class NotFound(AnimeDlCoreError):
     """Запрошенный эпизод/озвучка/видео отсутствует у плеера."""

@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "anime-players"
-version = "0.3.0"
+name = "anime-dl-core"
+version = "0.4.0"
 description = "Direct video URLs from Russian anime players: Aniboom, CVH, Kodik, Sibnet, Animedia, AniLibria, VK Video, SovetRomantica"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -33,7 +33,7 @@ socks = ["requests[socks]>=2.28", "aiohttp-socks>=0.8"]
 dev = ["pytest>=7.4", "pytest-asyncio>=0.23"]
 
 [project.scripts]
-anime-players = "anime_players.cli:run"
+anime-dl-core = "anime_dl_core.cli:run"
 
 [project.urls]
 Homepage = "https://github.com/ialakey/anime-dl-core"
@@ -42,11 +42,11 @@ Issues = "https://github.com/ialakey/anime-dl-core/issues"
 Changelog = "https://github.com/ialakey/anime-dl-core/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/anime_players"]
+packages = ["src/anime_dl_core"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-    "live: тесты, которые ходят в интернет (запуск: ANIME_PLAYERS_LIVE=1 pytest -m live)",
+    "live: тесты, которые ходят в интернет (запуск: ANIME_DL_CORE_LIVE=1 pytest -m live)",
 ]
 asyncio_mode = "auto"

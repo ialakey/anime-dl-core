@@ -27,7 +27,7 @@
      ``SovetRomanticaPlayer(base_url="https://новый-домен")`` — тогда плеер
      примет ссылку на любой хост;
    * свежие релизы SovetRomantica сейчас лежат в их сообществе ВКонтакте и
-     разбираются плеером :class:`~anime_players.players.vk.VkPlayer`.
+     разбираются плеером :class:`~anime_dl_core.players.vk.VkPlayer`.
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ class SovetRomanticaPlayer(BasePlayer):
 
     Пример (сайт лежит, поэтому берём настоящую страницу из веб-архива)::
 
-        from anime_players import SovetRomanticaPlayer
+        from anime_dl_core import SovetRomanticaPlayer
 
         archive = "https://web.archive.org/web/20240905174049id_/"
         with SovetRomanticaPlayer(base_url="https://web.archive.org") as player:

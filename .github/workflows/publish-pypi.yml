@@ -1,0 +1,124 @@
+# Uploads the package to PyPI on a v* tag.
+#
+# Two ways to authenticate, both configured once and outside this file:
+#
+#   1. Trusted Publishing (recommended). PyPI is told, once, that this
+#      repository and this workflow may publish the `anime-dl-core` project; the
+#      upload then uses a short-lived OIDC token and there is no secret to leak
+#      or rotate. Enable it here with the repository variable
+#      PYPI_TRUSTED_PUBLISHING=true.
+#   2. An API token in the PYPI_API_TOKEN secret. Takes precedence when set —
+#      useful if Trusted Publishing is not an option.
+#
+# With neither configured the job stays green and prints what to do: a release
+# tag should not fail because publishing has not been set up yet. See
+# docs/releasing.md.
+#
+# The build itself is repeated here rather than taken from build.yml on
+# purpose: what goes to PyPI is built from the tagged commit in this run, and
+# nothing else can slip in between.
+
+name: Publish to PyPI
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Where to upload"
+        type: choice
+        options: [pypi, testpypi]
+        default: pypi
+
+permissions:
+  contents: read
+  id-token: write # required by Trusted Publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build twine
+
+      # A tag that disagrees with pyproject.toml means the release would be
+      # published under a version nobody asked for, so stop before the upload
+      # rather than after it — PyPI does not allow re-uploading a version.
+      - name: Check the tag against the package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -euo pipefail
+          version=$(python -c "import tomllib,pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          tag="${GITHUB_REF_NAME#v}"
+          if [ "$version" != "$tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the version in pyproject.toml ($version)"
+            exit 1
+          fi
+          echo "Version $version matches tag $GITHUB_REF_NAME"
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Check the metadata
+        run: python -m twine check dist/*
+
+      - name: Pick the authentication mode
+        id: mode
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          TRUSTED: ${{ vars.PYPI_TRUSTED_PUBLISHING }}
+        run: |
+          set -euo pipefail
+          if [ -n "${PYPI_API_TOKEN:-}" ]; then
+            echo "mode=token" >> "$GITHUB_OUTPUT"
+            echo "Uploading with the PYPI_API_TOKEN secret."
+          elif [ "${TRUSTED:-}" = "true" ]; then
+            echo "mode=trusted" >> "$GITHUB_OUTPUT"
+            echo "Uploading with Trusted Publishing (OIDC)."
+          else
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+            echo "::notice::PyPI publishing is not configured, skipping the upload. Enable it either by setting the repository variable PYPI_TRUSTED_PUBLISHING=true (after adding a pending publisher on PyPI for this repository and workflow) or by adding a PYPI_API_TOKEN secret. See docs/releasing.md."
+          fi
+
+      - name: Publish to PyPI (Trusted Publishing)
+        if: steps.mode.outputs.mode == 'trusted' && inputs.target != 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Publish to PyPI (API token)
+        if: steps.mode.outputs.mode == 'token' && inputs.target != 'testpypi'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+      # TestPyPI is a separate account with its own token or its own pending
+      # publisher; it is only ever reached through a manual run.
+      - name: Publish to TestPyPI
+        if: inputs.target == 'testpypi' && steps.mode.outputs.mode != 'skip'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+
+      - name: Summary
+        if: steps.mode.outputs.mode != 'skip'
+        run: |
+          {
+            echo "## Published"
+            echo
+            echo "Commit: \`${GITHUB_SHA}\`"
+            echo
+            for file in dist/*; do
+              echo "- \`$(basename "$file")\` — \`$(sha256sum "$file" | cut -d' ' -f1)\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

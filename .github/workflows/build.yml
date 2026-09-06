@@ -41,7 +41,7 @@ jobs:
   # Only the offline suite runs here. The live tests talk to real player sites
   # and fail when a title is pulled or a service is geo-blocked from the runner
   # — that is not a regression of this library, and CI must not go red for it.
-  # Run them locally: ANIME_PLAYERS_LIVE=1 pytest -m live
+  # Run them locally: ANIME_DL_CORE_LIVE=1 pytest -m live
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -97,8 +97,8 @@ jobs:
         run: |
           python -m venv /tmp/smoke
           /tmp/smoke/bin/python -m pip install --quiet dist/*.whl
-          /tmp/smoke/bin/python -c "import anime_players; print(anime_players.__version__, anime_players.player_names())"
-          /tmp/smoke/bin/anime-players --list
+          /tmp/smoke/bin/python -c "import anime_dl_core; print(anime_dl_core.__version__, anime_dl_core.player_names())"
+          /tmp/smoke/bin/anime-dl-core --list
 
       # The hashes go into the log, the run summary and (below) the release
       # notes. The packages are unsigned, so this is what a user can verify.

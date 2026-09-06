@@ -61,7 +61,7 @@ class PlayerLink:
     label: str
     """Название озвучки."""
     embed: str
-    """Ссылка, которую нужно передать в :func:`anime_players.extract`."""
+    """Ссылка, которую нужно передать в :func:`anime_dl_core.extract`."""
     translation_id: Optional[str] = None
     cvh_id: Optional[str] = None
 
@@ -74,14 +74,14 @@ class AnimeGo:
 
     Пример::
 
-        from anime_players.sources import AnimeGo
-        import anime_players
+        from anime_dl_core.sources import AnimeGo
+        import anime_dl_core
 
         site = AnimeGo()
         anime = site.search("Магическая битва")[0]
         links = site.players(anime.id, episode=1)
         aniboom = next(link for link in links if link.player == "AniBoom")
-        result = anime_players.extract(aniboom.embed)
+        result = anime_dl_core.extract(aniboom.embed)
     """
 
     def __init__(

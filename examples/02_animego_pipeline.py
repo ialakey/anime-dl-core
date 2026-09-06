@@ -1,6 +1,6 @@
 """Сквозной сценарий: название аниме -> серия -> озвучка -> прямая ссылка.
 
-Ссылки на плееры берутся с AnimeGO (помощник anime_players.sources.AnimeGo),
+Ссылки на плееры берутся с AnimeGO (помощник anime_dl_core.sources.AnimeGo),
 а разбирает их уже сама библиотека.
 
 Запуск:
@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import sys
 
-import anime_players as ap
-from anime_players.sources import AnimeGo
+import anime_dl_core as ap
+from anime_dl_core.sources import AnimeGo
 
 # Порядок предпочтения плееров: чем раньше, тем лучше качество/стабильность
 PREFERRED = ("aniboom", "kodik", "cvh", "sibnet")

@@ -2,8 +2,8 @@
 
 Даёт то, чего не хватает плееру: поиск тайтла, список серий и ссылки на плееры.
 Сам сайт отдаёт две вещи — свой плеер ``aser.pro/vod/<id>`` (разбирает
-:class:`~anime_players.players.animedia.AnimediaPlayer`) и iframe Kodik
-(разбирает :class:`~anime_players.players.kodik.KodikPlayer`).
+:class:`~anime_dl_core.players.animedia.AnimediaPlayer`) и iframe Kodik
+(разбирает :class:`~anime_dl_core.players.kodik.KodikPlayer`).
 """
 
 from __future__ import annotations
@@ -44,8 +44,8 @@ class Animedia:
 
     Пример::
 
-        from anime_players.sources import Animedia
-        import anime_players as ap
+        from anime_dl_core.sources import Animedia
+        import anime_dl_core as ap
 
         with Animedia() as site:
             anime = site.search("Боруто")[0]

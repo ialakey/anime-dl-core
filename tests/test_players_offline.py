@@ -7,7 +7,7 @@ import json
 import pytest
 from conftest import FakeClient, fixture, fixture_json
 
-from anime_players import (
+from anime_dl_core import (
     AniboomPlayer,
     AnimediaPlayer,
     AnilibriaPlayer,
@@ -19,7 +19,7 @@ from anime_players import (
     VkPlayer,
     errors,
 )
-from anime_players.http import Response
+from anime_dl_core.http import Response
 
 ANIBOOM_EMBED = "https://aniboom.one/embed/9G1MJ6NMV8z?episode=1&translation=30"
 KODIK_EMBED = "https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p"

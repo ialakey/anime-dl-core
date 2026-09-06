@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Union
 
 import pytest
 
-from anime_players.http import DEFAULT_USER_AGENT, Response
+from anime_dl_core.http import DEFAULT_USER_AGENT, Response
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -26,7 +26,7 @@ def fixture_json(name: str) -> Any:
 
 
 class FakeClient:
-    """Заглушка вместо :class:`anime_players.http.HttpClient`.
+    """Заглушка вместо :class:`anime_dl_core.http.HttpClient`.
 
     Маршруты задаются подстрокой url: первый подошедший и отдаётся.
     """
@@ -81,10 +81,10 @@ def make_client():
 
 
 def pytest_collection_modifyitems(config: Any, items: List[Any]) -> None:
-    """Живые тесты пропускаются, если не выставлен ANIME_PLAYERS_LIVE=1."""
-    if os.environ.get("ANIME_PLAYERS_LIVE") == "1":
+    """Живые тесты пропускаются, если не выставлен ANIME_DL_CORE_LIVE=1."""
+    if os.environ.get("ANIME_DL_CORE_LIVE") == "1":
         return
-    skip = pytest.mark.skip(reason="нужен доступ в интернет: ANIME_PLAYERS_LIVE=1")
+    skip = pytest.mark.skip(reason="нужен доступ в интернет: ANIME_DL_CORE_LIVE=1")
     for item in items:
         if "live" in item.keywords:
             item.add_marker(skip)

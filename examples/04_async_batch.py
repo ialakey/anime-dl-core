@@ -1,7 +1,7 @@
 """Асинхронный разбор нескольких плееров сразу (нужен aiohttp).
 
 Запуск:
-    pip install anime-players[async]
+    pip install anime-dl-core[async]
     python examples/04_async_batch.py
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 
-import anime_players as ap
+import anime_dl_core as ap
 
 URLS = [
     "https://aniboom.one/embed/9G1MJ6NMV8z?episode=1&translation=30",
@@ -21,7 +21,7 @@ URLS = [
 async def resolve(url: str) -> None:
     try:
         result = await ap.extract_async(url, timeout=25)
-    except ap.AnimePlayersError as error:
+    except ap.AnimeDlCoreError as error:
         print(f"[{url[:40]}...] ошибка: {error}")
         return
     print(f"[{result.player:<9}] качества={result.qualities or 'auto'} -> {result.best().url[:80]}")

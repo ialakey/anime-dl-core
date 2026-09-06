@@ -3,6 +3,7 @@
 [English](README.md) · **Русский**
 
 [![CI](https://github.com/ialakey/anime-dl-core/actions/workflows/build.yml/badge.svg)](https://github.com/ialakey/anime-dl-core/actions/workflows/build.yml)
+[![PyPI](https://img.shields.io/pypi/v/anime-dl-core)](https://pypi.org/project/anime-dl-core/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -13,10 +14,10 @@ Aniboom, CVH (CdnVideoHub), Kodik, Sibnet, Animedia, AniLibria, VK Video, SovetR
 список потоков (HLS / DASH / MP4) с качествами и заголовками, без которых CDN
 не отдаст файл. Всё остальное (поиск, каталог, оценки) сознательно вынесено за
 скобки — для этого есть отдельный необязательный помощник
-[`anime_players.sources.AnimeGo`](#где-взять-ссылку-на-плеер).
+[`anime_dl_core.sources.AnimeGo`](#где-взять-ссылку-на-плеер).
 
 ```python
-import anime_players as ap
+import anime_dl_core as ap
 
 result = ap.extract("https://aniboom.one/embed/9G1MJ6NMV8z?episode=1&translation=30")
 
@@ -73,13 +74,17 @@ print(stream.ffmpeg_command("ep1.mp4"))     # готовая команда дл
 ## Установка
 
 ```bash
+pip install anime-dl-core                # обычная установка (только requests)
+pip install "anime-dl-core[async]"       # + асинхронный режим (aiohttp)
+pip install "anime-dl-core[socks]"       # + поддержка socks5-прокси
+```
+
+Из исходников — для разработки и тестов:
+
+```bash
 git clone https://github.com/ialakey/anime-dl-core.git
 cd anime-dl-core
-
-pip install -e .                 # обычная установка (только requests)
-pip install -e ".[async]"        # + асинхронный режим (aiohttp)
-pip install -e ".[socks]"        # + поддержка socks5-прокси
-pip install -e ".[dev]"          # + pytest для тестов
+pip install -e ".[async,dev]"
 ```
 
 Зависимость всего одна — `requests`. HTML разбирается регулярными выражениями,
@@ -87,14 +92,14 @@ pip install -e ".[dev]"          # + pytest для тестов
 
 Python 3.9+.
 
-Собранные wheel и sdist приложены к каждому
+Те же wheel и sdist приложены к каждому
 [релизу](https://github.com/ialakey/anime-dl-core/releases) вместе с SHA-256
 каждого файла и коммитом, из которого они собраны.
 
 ## Быстрый старт
 
 ```python
-import anime_players as ap
+import anime_dl_core as ap
 
 # 1. Плеер определяется по ссылке автоматически
 result = ap.extract("https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p")
@@ -188,7 +193,7 @@ with ap.AnilibriaPlayer() as player:
 ### Aniboom
 
 ```python
-from anime_players import AniboomPlayer
+from anime_dl_core import AniboomPlayer
 
 with AniboomPlayer() as player:
     result = player.extract(
@@ -208,7 +213,7 @@ with AniboomPlayer() as player:
 ### CVH (CdnVideoHub)
 
 ```python
-from anime_players import CvhPlayer
+from anime_dl_core import CvhPlayer
 
 with CvhPlayer() as player:
     # полный список серий и озвучек
@@ -229,7 +234,7 @@ with CvhPlayer() as player:
 ### Kodik
 
 ```python
-from anime_players import KodikPlayer
+from anime_dl_core import KodikPlayer
 
 with KodikPlayer() as player:
     result = player.extract(
@@ -253,7 +258,7 @@ with KodikPlayer() as player:
 ### Sibnet
 
 ```python
-from anime_players import SibnetPlayer
+from anime_dl_core import SibnetPlayer
 
 with SibnetPlayer() as player:
     result = player.extract("2589828")             # можно просто id
@@ -270,7 +275,7 @@ with SibnetPlayer() as player:
 ### Animedia
 
 ```python
-from anime_players import AnimediaPlayer
+from anime_dl_core import AnimediaPlayer
 
 with AnimediaPlayer() as player:
     result = player.extract("https://aser.pro/vod/20182")   # можно и просто 20182
@@ -289,7 +294,7 @@ with AnimediaPlayer() as player:
 ### AniLibria (AniLiberty)
 
 ```python
-from anime_players import AnilibriaPlayer
+from anime_dl_core import AnilibriaPlayer
 
 with AnilibriaPlayer() as player:
     print(player.search("Блич")[:1])                   # найти алиас релиза
@@ -304,7 +309,7 @@ with AnilibriaPlayer() as player:
 ### VK Video
 
 ```python
-from anime_players import VkPlayer
+from anime_dl_core import VkPlayer
 
 with VkPlayer() as player:
     # серия аниме в сообществе SovetRomantica ВКонтакте
@@ -343,7 +348,7 @@ VkPlayer.embed_url(-33905270, 456239024, access_key="abc")   # собрать em
 пример — на настоящей странице embed из веб-архива:
 
 ```python
-from anime_players import SovetRomanticaPlayer
+from anime_dl_core import SovetRomanticaPlayer
 
 archived = ("https://web.archive.org/web/20240905174049id_/"
             "https://sovetromantica.com/embed/episode_1073_1-dubbed")
@@ -378,8 +383,8 @@ with SovetRomanticaPlayer(base_url="https://новый-домен") as player:
 сколько нужно для сквозного сценария:
 
 ```python
-from anime_players.sources import AnimeGo
-import anime_players as ap
+from anime_dl_core.sources import AnimeGo
+import anime_dl_core as ap
 
 with AnimeGo() as site:                    # AnimeGo(mirror="animego.me", proxy=...)
     anime = site.search("Магическая битва")[0]
@@ -402,8 +407,8 @@ with AnimeGo() as site:                    # AnimeGo(mirror="animego.me", proxy=
 Второй помощник — сайт **Animedia** (amd.online):
 
 ```python
-from anime_players.sources import Animedia
-import anime_players as ap
+from anime_dl_core.sources import Animedia
+import anime_dl_core as ap
 
 with Animedia() as site:                       # Animedia(base_url="https://новый-домен")
     anime = site.search("Боруто")[0]
@@ -427,7 +432,7 @@ Alloha (`api.alloha.tv`) — не плеер в терминах этой биб
 озвучки, сезоны с сериями и готовую ссылку на свой iframe.
 
 ```python
-from anime_players.sources import Alloha
+from anime_dl_core.sources import Alloha
 
 with Alloha() as alloha:                       # Alloha(token="свой токен")
     anime = alloha.find(name="Атака титанов")  # или find(kp=749374), find(imdb="tt2560140")
@@ -455,12 +460,12 @@ headless-браузер — обычным разбором html это не р�
 ## Асинхронный режим
 
 ```bash
-pip install -e ".[async]"
+pip install "anime-dl-core[async]"
 ```
 
 ```python
 import asyncio
-import anime_players as ap
+import anime_dl_core as ap
 
 async def main():
     # разные плееры параллельно
@@ -485,18 +490,18 @@ asyncio.run(main())
 ## Командная строка
 
 ```bash
-anime-players --list                       # какие плееры поддерживаются
-anime-players https://aniboom.one/embed/9G1MJ6NMV8z
-anime-players 51019 --player cvh --episode 2 --studio AniLibria
-anime-players bleach --player anilibria --episode 1 --best --max-quality 720
-anime-players <ссылка> --json              # машинно-читаемый вывод
-anime-players <ссылка> --ffmpeg ep1.mp4    # готовая команда ffmpeg
-anime-players <ссылка> --kind mp4 --proxy socks5://127.0.0.1:9050
-anime-players "https://vk.com/video_ext.php?oid=-33905270&id=456239024" --best --kind mp4
-anime-players -33905270_456239024 --json          # VK понимает и голый id
+anime-dl-core --list                       # какие плееры поддерживаются
+anime-dl-core https://aniboom.one/embed/9G1MJ6NMV8z
+anime-dl-core 51019 --player cvh --episode 2 --studio AniLibria
+anime-dl-core bleach --player anilibria --episode 1 --best --max-quality 720
+anime-dl-core <ссылка> --json              # машинно-читаемый вывод
+anime-dl-core <ссылка> --ffmpeg ep1.mp4    # готовая команда ffmpeg
+anime-dl-core <ссылка> --kind mp4 --proxy socks5://127.0.0.1:9050
+anime-dl-core "https://vk.com/video_ext.php?oid=-33905270&id=456239024" --best --kind mp4
+anime-dl-core -33905270_456239024 --json          # VK понимает и голый id
 ```
 
-Без установки: `python -m anime_players <ссылка>`.
+Без установки: `python -m anime_dl_core <ссылка>`.
 
 Пример вывода:
 
@@ -528,7 +533,7 @@ with ap.KodikPlayer(proxy="http://127.0.0.1:8080", timeout=15) as player:
 Для socks5 нужен extras `[socks]`. Можно передать и готовый клиент:
 
 ```python
-from anime_players import HttpClient
+from anime_dl_core import HttpClient
 client = HttpClient(proxy="http://127.0.0.1:8080", timeout=10)
 result = ap.AniboomPlayer(client).extract(url)
 ```
@@ -540,8 +545,8 @@ http-клиент, а всё остальное (`episode`, `season`, `studio`, 
 ## Свой плеер
 
 ```python
-from anime_players import BasePlayer, PlayerResult, Stream, StreamKind, register
-from anime_players.utils import search
+from anime_dl_core import BasePlayer, PlayerResult, Stream, StreamKind, register
+from anime_dl_core.utils import search
 
 @register
 class MyPlayer(BasePlayer):
@@ -566,7 +571,7 @@ ap.extract("https://myplayer.example/embed/1")   # уже работает
 
 ## Ошибки
 
-Все исключения наследуются от `AnimePlayersError`:
+Все исключения наследуются от `AnimeDlCoreError`:
 
 | Исключение | Когда |
 |---|---|
@@ -584,18 +589,18 @@ try:
     result = ap.extract(url)
 except ap.ContentBlocked:
     result = ap.extract(url, proxy="socks5://...")
-except ap.AnimePlayersError as error:
+except ap.AnimeDlCoreError as error:
     print("не получилось:", error)
 ```
 
 ## Тесты
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev]"     # из клона репозитория
 
 pytest                                   # 86 тестов на сохранённых ответах, без сети
-ANIME_PLAYERS_LIVE=1 pytest -m live      # 18 живых тестов (bash)
-$env:ANIME_PLAYERS_LIVE=1; pytest -m live   # то же в PowerShell
+ANIME_DL_CORE_LIVE=1 pytest -m live      # 18 живых тестов (bash)
+$env:ANIME_DL_CORE_LIVE=1; pytest -m live   # то же в PowerShell
 ```
 
 Офлайн-тесты гоняют разбор на реальных ответах плееров, сохранённых в
@@ -607,7 +612,7 @@ $env:ANIME_PLAYERS_LIVE=1; pytest -m live   # то же в PowerShell
 ## Как это устроено внутри
 
 ```
-src/anime_players/
+src/anime_dl_core/
     __init__.py       публичный API
     registry.py       реестр плееров, extract() / extract_async()
     base.py           BasePlayer: клиенты, сопоставление ссылок, жизненный цикл
@@ -664,6 +669,13 @@ src/anime_players/
 - Библиотека ничего не скачивает сама и не обходит платные ограничения: она лишь
   читает те же данные, что и обычный веб-плеер в браузере. Ответственность за
   использование лежит на вас; уважайте авторские права и правила сайтов.
+
+## Как выпускается релиз
+
+Релизы собирает CI по тегу `v*`: релиз на GitHub с артефактами и их SHA-256,
+затем загрузка на PyPI. Порядок действий и разовая настройка PyPI —
+в [`docs/releasing.md`](docs/releasing.md). История версий:
+[`CHANGELOG.ru.md`](CHANGELOG.ru.md).
 
 ## Лицензия
 

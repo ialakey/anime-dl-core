@@ -1,95 +1,146 @@
-# Изменения
+# Changelog
 
-Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
-версии — по [семантическому версионированию](https://semver.org/lang/ru/).
+**English** · [Русский](CHANGELOG.ru.md)
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
+[semantic versioning](https://semver.org/).
+
+## [0.4.0] — 2026-09-06
+
+### Breaking changes
+
+The library is renamed to match the repository and the PyPI package. The old
+names are gone with no compatibility shims — nothing was ever published under
+them.
+
+| Before | After |
+|---|---|
+| `pip install anime-players` | `pip install anime-dl-core` |
+| `import anime_players` | `import anime_dl_core` |
+| the `anime-players` command | the `anime-dl-core` command |
+| `python -m anime_players` | `python -m anime_dl_core` |
+| `AnimePlayersError` | `AnimeDlCoreError` |
+| `ANIME_PLAYERS_LIVE=1 pytest -m live` | `ANIME_DL_CORE_LIVE=1 pytest -m live` |
+
+### Added
+
+- **Published on PyPI**: `pip install anime-dl-core`. Uploading is done by a
+  separate workflow, `.github/workflows/publish-pypi.yml`, on a `v*` tag —
+  through PyPI Trusted Publishing (OIDC, no secrets) or through a
+  `PYPI_API_TOKEN` secret when one is set. Until publishing is enabled the step
+  does not fail; it prints what to do instead.
+- Release instructions in [`docs/releasing.md`](docs/releasing.md).
+- An English `CHANGELOG.md` and a Russian `CHANGELOG.ru.md` that link to each
+  other, the same way the two READMEs do.
+
+### Infrastructure
+
+- The [ialakey/anime-dl-core](https://github.com/ialakey/anime-dl-core)
+  repository: two READMEs (English and Russian) with a language switch, a
+  description and topics.
+- CI (`build.yml`): the offline suite on Python 3.9 / 3.12 / 3.13, an
+  sdist + wheel build, an install of the built wheel into a clean environment,
+  and the SHA-256 of every file plus the build commit in the release notes. A
+  push to `main` refreshes the rolling `latest` pre-release, a `v*` tag creates
+  a versioned release.
 
 ## [0.3.0] — 2026-09-06
 
-### Добавлено
+### Added
 
-- **Плеер Animedia** (`aser.pro/vod/<id>`) — проверен вживую: HLS-мастер
-  разворачивается по качествам, поддержаны все форматы параметра `file`
-  плеера Playerjs (одна ссылка, `[720]url1,[360]url2`, json-плейлист).
-- **Помощник `sources.Animedia`** для сайта amd.online (бывший animedia.tv):
-  поиск тайтла, название и постер, список серий (`{номер: ссылка на плеер}`) и
-  все плееры страницы, включая iframe Kodik.
-- **Помощник `sources.Alloha`** — открытое API api.alloha.tv: поиск по
-  Кинопоиску / IMDb / TMDb / названию, описание, озвучки, сезоны с сериями и
-  ссылки на iframe (в том числе для конкретной серии и озвучки),
-  `translations_for()` для набора озвучек конкретной серии.
-- Пример `examples/07_animedia_alloha.py`, 22 офлайн-теста (всего 86) и
-  4 живых теста (всего 18).
+- **The Animedia player** (`aser.pro/vod/<id>`), verified live: the HLS master
+  playlist is expanded into qualities, and every format the Playerjs `file`
+  parameter can take is supported (a single link, `[720]url1,[360]url2`, a json
+  playlist).
+- **The `sources.Animedia` helper** for the amd.online site (formerly
+  animedia.tv): title search, name and poster, the episode list
+  (`{number: player link}`) and every player on the page, Kodik iframes
+  included.
+- **The `sources.Alloha` helper** — the open api.alloha.tv API: lookup by
+  Kinopoisk / IMDb / TMDb id or by title, description, dubs, seasons with
+  episodes and iframe links (including per episode and per dub), plus
+  `translations_for()` for the dubs of one specific episode.
+- The `examples/07_animedia_alloha.py` example, 22 offline tests (86 in total)
+  and 4 live tests (18 in total).
 
-### Примечания
+### Notes
 
-- **Alloha не отдаёт прямых ссылок на видео**: её плеер получает их по WebSocket
-  из обфусцированного бандла, в html и открытом API их нет. Поэтому Alloha
-  сделана источником (`sources`), а не плеером — она возвращает ссылку на iframe.
-  Для файлов нужен headless-браузер.
-- Старые ссылки Animedia `online.animedia.tv/embed/...` (их до сих пор отдают
-  некоторые агрегаторы) не работают: домен отвечает бесконечным редиректом на
-  самого себя. Рабочие ссылки — `aser.pro/vod/<id>` со страницы amd.online.
+- **Alloha exposes no direct video links**: its player fetches them over a
+  WebSocket from an obfuscated bundle, and they are in neither the HTML nor the
+  open API. That is why Alloha is a source (`sources`) rather than a player — it
+  returns an iframe URL. Getting the files themselves requires a headless
+  browser.
+- The old Animedia links `online.animedia.tv/embed/...` that some aggregators
+  still hand out do not work: the domain answers with an endless redirect to
+  itself. The working links are `aser.pro/vod/<id>`, taken from the amd.online
+  title page.
 
 ## [0.2.0] — 2026-09-06
 
-### Изменено
+### Changed
 
-- **VK Video теперь полноценно поддерживается и проверен вживую.** Разбор
-  переписан под актуальный формат страницы `video_ext.php`: данные берутся из
-  `window.cur` → `apiPrefetchCache` → ответ метода `video.get` (`files` с
-  `mp4_144`…`mp4_2160`, `hls_ondemand`, `dash_ondemand`, `hls_fmp4`). Старый
-  формат `var playerParams` остался как запасной вариант.
-- **VK: любые формы ссылок.** Понимает embed, `vkvideo.ru/video-123_456`,
-  `vk.ru/...`, ссылку с `hash` и просто `-123_456` (в том числе в CLI).
-- **VK: мастер-плейлист HLS разворачивается по качествам** (`resolve_qualities`),
-  добавлены название, длительность, обложка, флаг трансляции; приватные и
-  удалённые видео дают `ContentBlocked` с пояснением.
-- **SovetRomantica: разбор переписан под настоящую разметку** embed-страницы
-  (`var config={...}` + `var skips=[...]`): плейлист, постер, превью-vtt,
-  название, тип озвучки, ссылка на следующую серию и таймкоды опенинга/эндинга.
-- **SovetRomantica: параметр `base_url`** — зеркало, новый домен или веб-архив;
-  с ним плеер принимает ссылку на любой хост. Понятная ошибка, если по адресу
-  оказался не embed (сейчас домен `sovetromantica.com` принадлежит другому
-  владельцу, а CDN отключён — команда собирает деньги на перезапуск).
-- У плееров появилось поле `note`, оно показывается в `anime-players --list`.
+- **VK Video is now fully supported and verified live.** Parsing was rewritten
+  for the current `video_ext.php` format: the data comes from `window.cur` →
+  `apiPrefetchCache` → the `video.get` response (`files` with `mp4_144`…
+  `mp4_2160`, `hls_ondemand`, `dash_ondemand`, `hls_fmp4`). The legacy
+  `var playerParams` format stays as a fallback.
+- **VK: every link shape.** Embeds, `vkvideo.ru/video-123_456`, `vk.ru/...`, a
+  link with `hash` and the bare `-123_456` (in the CLI too).
+- **VK: the HLS master playlist is expanded into qualities**
+  (`resolve_qualities`); title, duration, poster and a live flag were added, and
+  private or deleted videos raise `ContentBlocked` with an explanation.
+- **SovetRomantica: parsing rewritten for the real markup** of the embed page
+  (`var config={...}` + `var skips=[...]`): playlist, poster, vtt thumbnails,
+  title, dub type, the link to the next episode and the opening/ending
+  timecodes.
+- **SovetRomantica: the `base_url` parameter** — a mirror, a new domain or the
+  Wayback Machine; with it the player accepts a link to any host. The error is
+  explicit when the address turns out not to be an embed (which is exactly what
+  the hijacked `sovetromantica.com` domain returns today, its CDN being off
+  while the team raises money to relaunch).
+- Players gained a `note` field, shown by `anime-dl-core --list`.
 
-### Добавлено
+### Added
 
-- Пример `examples/06_vk_sovetromantica.py` с обоими плеерами.
-- 11 офлайн-тестов на настоящих сохранённых страницах VK и SovetRomantica
-  (всего 64) и 6 живых тестов (всего 14), включая проверку, что VK-поток
-  реально скачивается.
+- The `examples/06_vk_sovetromantica.py` example covering both players.
+- 11 offline tests on real saved VK and SovetRomantica pages (64 in total) and
+  6 live tests (14 in total), including a check that a VK stream really
+  downloads.
 
 ## [0.1.0] — 2026-09-06
 
-Первый выпуск.
+The first release.
 
-### Добавлено
+### Added
 
-- Плееры: **Aniboom**, **CVH (CdnVideoHub)**, **Kodik**, **Sibnet**,
-  **AniLibria (AniLiberty)** — все проверены на живых ссылках;
-  **VK Video** и **SovetRomantica** — реализованы, но без живой проверки.
-- Единый фасад `anime_players.extract(url)` с автоопределением плеера по ссылке
-  и реестр плееров с возможностью зарегистрировать свой (`register`).
-- Модели `PlayerResult` / `Stream` / `SkipSegment` / `StreamKind`: выбор потока
-  (`best`, `filter`, `master`), заголовки для скачивания, генерация команды ffmpeg,
-  сериализация в json.
-- Асинхронный режим (`extract_async`, `aextract`) на aiohttp — extras `[async]`.
-- Поддержка http/socks5-прокси, своих заголовков и таймаутов.
-- Командная строка `anime-players` (`--json`, `--best`, `--kind`, `--max-quality`,
-  `--ffmpeg`, `--episode`, `--season`, `--studio`, `--proxy`, `--list`).
-- Необязательный помощник `anime_players.sources.AnimeGo`: поиск аниме, список
-  серий и ссылок на плееры.
-- Тесты: 53 офлайн-теста на сохранённых ответах плееров и 8 живых тестов
-  (`pytest -m live`), примеры в `examples/`.
+- Players: **Aniboom**, **CVH (CdnVideoHub)**, **Kodik**, **Sibnet**,
+  **AniLibria (AniLiberty)** — all verified against live links;
+  **VK Video** and **SovetRomantica** — implemented but not verified live.
+- A single `extract(url)` facade that detects the player from the URL, and a
+  registry that accepts custom players (`register`).
+- The `PlayerResult` / `Stream` / `SkipSegment` / `StreamKind` models: stream
+  selection (`best`, `filter`, `master`), download headers, ffmpeg command
+  generation and json serialisation.
+- Async mode (`extract_async`, `aextract`) on aiohttp — the `[async]` extra.
+- Support for http/socks5 proxies, custom headers and timeouts.
+- The `anime-dl-core` command line (`--json`, `--best`, `--kind`,
+  `--max-quality`, `--ffmpeg`, `--episode`, `--season`, `--studio`, `--proxy`,
+  `--list`).
+- The optional `sources.AnimeGo` helper: anime search, the episode list and
+  player links.
+- Tests: 53 offline tests on saved player responses and 8 live tests
+  (`pytest -m live`), plus the examples in `examples/`.
 
-### Особенности реализации
+### Implementation notes
 
-- Kodik: параметр `ref` в запросе к `/ftor` отправляется **раскодированным** —
-  с пустым значением сервер отвечает 500 (так ломались старые реализации).
-- Kodik: сдвиг шифра Цезаря подбирается перебором и кэшируется в объекте плеера,
-  адрес ручки (`atob(...)`) ищется регуляркой, а не по смещению в скрипте.
-- CVH: ключи ответа CDN Одноклассников (`mpegHighUrl`, `mpegFullHdUrl`, ...)
-  сопоставлены с высотой картинки; старый формат `url720` тоже понимается.
-- Aniboom: мастер-плейлист HLS разворачивается в отдельные потоки по качествам.
-- Разбор не зависит от `bs4`/`lxml` — единственная обязательная зависимость `requests`.
+- Kodik: the `ref` parameter of the `/ftor` request is sent **url-decoded** —
+  with an empty value the server answers 500 (which is how older
+  implementations broke).
+- Kodik: the Caesar shift is brute-forced and cached on the player object, and
+  the endpoint (`atob(...)`) is located with a regex rather than by an offset
+  into the script.
+- CVH: the Odnoklassniki CDN response keys (`mpegHighUrl`, `mpegFullHdUrl`, ...)
+  are mapped to picture heights; the older `url720` style is understood too.
+- Aniboom: the HLS master playlist is expanded into separate quality streams.
+- Parsing does not depend on `bs4`/`lxml` — `requests` is the only required
+  dependency.

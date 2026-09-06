@@ -2,8 +2,8 @@
 
 Запуск::
 
-    ANIME_PLAYERS_LIVE=1 pytest -m live          # bash
-    $env:ANIME_PLAYERS_LIVE=1; pytest -m live    # PowerShell
+    ANIME_DL_CORE_LIVE=1 pytest -m live          # bash
+    $env:ANIME_DL_CORE_LIVE=1; pytest -m live    # PowerShell
 
 Ссылки в тестах со временем протухают (аниме удаляют, id меняются). Если тест
 упал с NotFound — обновите константы ниже, это не поломка библиотеки.
@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-import anime_players as ap
-from anime_players.sources import AnimeGo
+import anime_dl_core as ap
+from anime_dl_core.sources import AnimeGo
 
 pytestmark = pytest.mark.live
 
@@ -150,7 +150,7 @@ def test_sovetromantica_live_from_archive():
 def test_sovetromantica_domain_is_taken_over():
     """Пока сайт не вернулся, обычная ссылка приводит к понятной ошибке."""
     with ap.SovetRomanticaPlayer(timeout=30) as player:
-        with pytest.raises(ap.AnimePlayersError):
+        with pytest.raises(ap.AnimeDlCoreError):
             player.extract("episode_1073_1-dubbed")
 
 
@@ -159,7 +159,7 @@ ANIMEDIA_TITLE = "Боруто"
 
 
 def test_animedia_live():
-    from anime_players.sources import Animedia
+    from anime_dl_core.sources import Animedia
 
     with Animedia() as site:
         anime = site.search(ANIMEDIA_TITLE)[0]
@@ -183,7 +183,7 @@ def test_animedia_stream_is_downloadable():
 # -- Alloha -------------------------------------------------------------
 def test_alloha_live():
     """Alloha отдаёт каталог и ссылки на свой iframe (прямых файлов у неё нет)."""
-    from anime_players.sources import Alloha
+    from anime_dl_core.sources import Alloha
 
     with Alloha() as alloha:
         item = alloha.find(name="Атака титанов")
@@ -195,7 +195,7 @@ def test_alloha_live():
 
 
 def test_alloha_by_kinopoisk_id():
-    from anime_players.sources import Alloha
+    from anime_dl_core.sources import Alloha
 
     with Alloha() as alloha:
         item = alloha.find(kp=435)
