@@ -1,4 +1,4 @@
-"""Реализации плееров."""
+"""Player implementations."""
 
 from .animedia import AnimediaPlayer
 from .aniboom import AniboomPlayer

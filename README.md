@@ -510,20 +510,21 @@ Without installing: `python -m anime_dl_core <url>`.
 Sample output:
 
 ```
-Плеер: kodik
-Озвучка: 2x2
-Пропуск: opening 30-110s, ending 1375-1445s
-Потоки (6):
+Player: kodik
+Translation: 2x2
+Skip: opening 30-110s, ending 1375-1445s
+Streams (6):
   [hls    360p] https://cloud.solodcdn.com/.../360.mp4:hls:manifest.m3u8
   [mp4    360p] https://cloud.solodcdn.com/.../360.mp4
   ...
-Заголовки для скачивания:
+Headers required for downloading:
   Referer: https://kodikplayer.com/
   User-Agent: Mozilla/5.0 ...
 ```
 
-The CLI output, docstrings and error messages are in Russian, matching the sites
-the library talks to.
+The CLI output, docstrings and error messages are in English. Values that come
+from the sites themselves stay as those sites spell them: titles, dub names, and
+the Alloha `category` field are returned verbatim in Russian.
 
 ## Proxies, headers, timeouts
 

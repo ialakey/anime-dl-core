@@ -1,9 +1,9 @@
-"""Скачивание серии через ffmpeg (ffmpeg должен быть установлен и доступен в PATH).
+"""Downloading an episode with ffmpeg (ffmpeg must be installed and on PATH).
 
-Запуск:
-    python examples/03_download_ffmpeg.py <ссылка на плеер> [файл.mp4] [качество]
+Run it with:
+    python examples/03_download_ffmpeg.py <player url> [file.mp4] [quality]
 
-Пример:
+Example:
     python examples/03_download_ffmpeg.py https://aniboom.one/embed/9G1MJ6NMV8z ep1.mp4 720
 """
 
@@ -26,25 +26,25 @@ def main() -> int:
     max_quality = int(sys.argv[3]) if len(sys.argv) > 3 else None
 
     result = ap.extract(url)
-    # allow_master=False — берём поток конкретного качества, а не мастер-плейлист
+    # allow_master=False — take a stream of a specific quality, not the master playlist
     try:
         stream = result.best(max_quality=max_quality, allow_master=False)
     except ap.NoStreamsFound:
         stream = result.best(max_quality=max_quality)
 
-    print(f"Плеер: {result.player}, качество: {stream.quality or 'auto'}")
-    print(f"Источник: {stream.url}")
+    print(f"Player: {result.player}, quality: {stream.quality or 'auto'}")
+    print(f"Source: {stream.url}")
 
     if shutil.which("ffmpeg") is None:
-        print("\nffmpeg не найден в PATH. Скопируйте команду и выполните вручную:")
+        print("\nffmpeg was not found on PATH. Copy the command and run it yourself:")
         print(stream.ffmpeg_command(output))
         return 1
 
     args = stream.ffmpeg_args(output, extra_args=["-bsf:a", "aac_adtstoasc", "-y"])
-    print("\nЗапускаем:", " ".join(args[:4]), "...")
+    print("\nRunning:", " ".join(args[:4]), "...")
     completed = subprocess.run(args)
     if completed.returncode == 0:
-        print(f"Готово: {output}")
+        print(f"Done: {output}")
     return completed.returncode
 
 

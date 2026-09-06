@@ -5,6 +5,21 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- **The code is now in English.** Docstrings, inline comments, exception
+  messages, CLI help and CLI output were all Russian; every one of them is now
+  English. Values that come from the sites themselves are untouched: titles,
+  dub names, the `translation` labels SovetRomantica uses, and Alloha's
+  `category` field are still returned exactly as those sites spell them, and the
+  page markers the parsers match on (`"не доступно"`, `"ничего не найдено"`,
+  `" (ошибка)"`) stay in Russian because the pages do.
+- `AnilibriaPlayer` builds its `title` as `"<release> — episode <n>"`; it used
+  to say `"— серия <n>"`. This is the one behaviour change: code that matched
+  that title needs updating.
+
 ## [0.4.1] — 2026-09-06
 
 No library changes: the code of 0.4.1 is identical to 0.4.0. The release exists

@@ -1,9 +1,9 @@
-"""Плеер CVH — CdnVideoHub (plapi.cdnvideohub.com), он же "CVH" на AnimeGO.
+"""The CVH player — CdnVideoHub (plapi.cdnvideohub.com), listed as "CVH" on AnimeGO.
 
-Как устроен: у медиа есть числовой ``cvh_id``, который сайт подставляет в iframe
-(``/cdn-iframe/<cvh_id>/<студия>/<сезон>/<эпизод>``). По нему через открытый API
-берётся плейлист всех серий и озвучек, а по ``vkId`` конкретной серии — ссылки на
-потоки. Раздаёт видео CDN Одноклассников (okcdn.ru).
+How it works: a media item has a numeric ``cvh_id`` that the site drops into an
+iframe (``/cdn-iframe/<cvh_id>/<studio>/<season>/<episode>``). That id fetches the
+playlist of every episode and dub through an open API, and the ``vkId`` of one
+episode fetches its streams. The video itself is served by Odnoklassniki's CDN (okcdn.ru).
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ __all__ = ["CvhPlayer", "CvhEpisode"]
 _IFRAME_RE = re.compile(r"/cdn-iframe/(\d+)(?:/([^/?#]+))?(?:/(\d+))?(?:/(\d+))?", re.IGNORECASE)
 _VIDEO_RE = re.compile(r"/player/sv/video/(\d+)", re.IGNORECASE)
 
-#: Соответствие ключей ответа CVH (naming Одноклассников) и высоты картинки.
+#: Maps the keys of a CVH response (Odnoklassniki naming) to picture height.
 QUALITY_KEYS = {
     "mpegMobileUrl": 144,
     "mpegTinyUrl": 144,
@@ -39,7 +39,7 @@ QUALITY_KEYS = {
 
 @dataclass(frozen=True)
 class CvhEpisode:
-    """Один элемент плейлиста CVH: серия в конкретной озвучке."""
+    """One playlist entry from CVH: an episode in one particular dub."""
 
     cvh_id: str
     video_id: str
@@ -71,9 +71,9 @@ class CvhEpisode:
 
 
 class CvhPlayer(BasePlayer):
-    """Плеер CVH (CdnVideoHub).
+    """The CVH (CdnVideoHub) player.
 
-    Пример::
+    Example::
 
         with CvhPlayer() as player:
             for ep in player.playlist("51019"):
@@ -91,19 +91,19 @@ class CvhPlayer(BasePlayer):
 
     def __init__(self, *args: Any, pub: str = "747", aggr: str = "mali", **kwargs: Any) -> None:
         """
-        :param pub: идентификатор издателя (для animego.org — ``747``).
-        :param aggr: идентификатор агрегатора (для animego.org — ``mali``).
+        :param pub: publisher id (``747`` for animego.org).
+        :param aggr: aggregator id (``mali`` for animego.org).
         """
         super().__init__(*args, **kwargs)
         self.pub = pub
         self.aggr = aggr
 
-    # -- разбор ссылок --------------------------------------------------
+    # -- url parsing -----------------------------------------------------
     @classmethod
     def parse_url(cls, url: str) -> Dict[str, Any]:
-        """Достаёт из ссылки на iframe ``cvh_id``/студию/сезон/эпизод.
+        """Pulls ``cvh_id``/studio/season/episode out of an iframe url.
 
-        Понимает и просто числовой id, и ссылку ``/player/sv/video/<vkId>``.
+        Also understands a bare numeric id and a ``/player/sv/video/<vkId>`` url.
         """
         url = str(url).strip()
         if url.isdigit():
@@ -114,8 +114,8 @@ class CvhPlayer(BasePlayer):
         match = _IFRAME_RE.search(url)
         if not match:
             raise ExtractionError(
-                f"Не удалось понять ссылку CVH: {url!r}. "
-                "Ожидалось /cdn-iframe/<id>/<студия>/<сезон>/<эпизод> либо числовой id."
+                f"Could not make sense of the CVH url: {url!r}. "
+                "Expected /cdn-iframe/<id>/<studio>/<season>/<episode> or a numeric id."
             )
         studio = match.group(2)
         return {
@@ -127,7 +127,7 @@ class CvhPlayer(BasePlayer):
 
     # -- API ------------------------------------------------------------
     def playlist(self, cvh_id: str) -> List[CvhEpisode]:
-        """Все серии и озвучки медиа."""
+        """Every episode and dub of a media item."""
         resp = self.client.get(self._playlist_url(cvh_id), headers=self._api_headers())
         return self._parse_playlist(resp.raise_for_status().json(), cvh_id)
 
@@ -144,13 +144,13 @@ class CvhPlayer(BasePlayer):
         studio: Optional[str] = None,
         **_: Any,
     ) -> PlayerResult:
-        """Возвращает потоки нужной серии.
+        """Returns the streams of the requested episode.
 
-        :param url: ссылка на iframe, числовой ``cvh_id`` или ссылка ``/player/sv/video/<id>``.
-        :param season: номер сезона (если сезон один — параметр игнорируется).
-        :param episode: номер эпизода (по умолчанию — первый доступный).
-        :param studio: название озвучки; сопоставляется нестрого
-            (``"AniLibria"`` найдёт ``"AnilibriaTV"``).
+        :param url: an iframe url, a numeric ``cvh_id``, or a ``/player/sv/video/<id>`` url.
+        :param season: season number (ignored when there is only one season).
+        :param episode: episode number (the first available one by default).
+        :param studio: dub name; matched loosely
+            (``"AniLibria"`` will find ``"AnilibriaTV"``).
         """
         parsed = self.parse_url(url)
         season = season if season is not None else parsed.get("season")
@@ -188,7 +188,7 @@ class CvhPlayer(BasePlayer):
     def extract_video(
         self, video_id: str, *, source_url: Optional[str] = None, episode: Optional[CvhEpisode] = None
     ) -> PlayerResult:
-        """Потоки по ``vkId`` конкретного видео."""
+        """Streams for the ``vkId`` of one particular video."""
         resp = self.client.get(f"{self.api_base}/video/{video_id}", headers=self._api_headers())
         return self._build_result(resp.raise_for_status().json(), video_id, source_url, episode)
 
@@ -198,7 +198,7 @@ class CvhPlayer(BasePlayer):
         resp = await self.async_client.get(f"{self.api_base}/video/{video_id}", headers=self._api_headers())
         return self._build_result(resp.raise_for_status().json(), video_id, source_url, episode)
 
-    # -- выбор серии ----------------------------------------------------
+    # -- picking an episode ----------------------------------------------
     @staticmethod
     def select(
         items: Sequence[CvhEpisode],
@@ -207,34 +207,34 @@ class CvhPlayer(BasePlayer):
         episode: Optional[int] = None,
         studio: Optional[str] = None,
     ) -> CvhEpisode:
-        """Выбирает серию из плейлиста. Бросает :class:`NotFound`, если не нашлась."""
+        """Picks an episode from the playlist. Raises :class:`NotFound` when there is none."""
         if not items:
-            raise NotFound("Плейлист CVH пуст")
+            raise NotFound("The CVH playlist is empty")
 
         seasons = sorted({item.season for item in items})
         if season is None or len(seasons) == 1:
             season = seasons[0] if len(seasons) == 1 else (season or seasons[0])
         pool = [item for item in items if item.season == season]
         if not pool:
-            raise NotFound(f"Сезон {season} не найден. Доступные сезоны: {seasons}")
+            raise NotFound(f"Season {season} was not found. Available seasons: {seasons}")
 
         episodes = sorted({item.episode for item in pool})
         if episode is None:
             episode = episodes[0]
         pool = [item for item in pool if item.episode == episode]
         if not pool:
-            raise NotFound(f"Эпизод {episode} не найден в сезоне {season}. Доступные: {episodes}")
+            raise NotFound(f"Episode {episode} was not found in season {season}. Available: {episodes}")
 
         if studio:
             match = _match_studio(studio, pool)
             if match is None:
                 raise NotFound(
-                    f"Озвучка {studio!r} не найдена. Доступные: {[item.studio for item in pool]}"
+                    f"Dub {studio!r} was not found. Available: {[item.studio for item in pool]}"
                 )
             return match
         return pool[0]
 
-    # -- внутреннее ------------------------------------------------------
+    # -- internals --------------------------------------------------------
     def _playlist_url(self, cvh_id: str) -> str:
         return f"{self.api_base}/playlist?pub={self.pub}&aggr={self.aggr}&id={cvh_id}"
 
@@ -245,7 +245,7 @@ class CvhPlayer(BasePlayer):
     def _parse_playlist(data: Any, cvh_id: str) -> List[CvhEpisode]:
         items = (data or {}).get("items") or []
         if not items:
-            raise NotFound(f"CVH вернул пустой плейлист для id={cvh_id}")
+            raise NotFound(f"CVH returned an empty playlist for id={cvh_id}")
         return [CvhEpisode.from_api(item) for item in items]
 
     def _build_result(
@@ -277,7 +277,7 @@ class CvhPlayer(BasePlayer):
             )
 
         if not streams:
-            raise NoStreamsFound(f"CVH не вернул ссылок для видео {video_id}. sources={sources}")
+            raise NoStreamsFound(f"CVH returned no links for video {video_id}. sources={sources}")
 
         return PlayerResult(
             player=self.name,
@@ -295,7 +295,7 @@ class CvhPlayer(BasePlayer):
 
 
 def _match_studio(name: str, items: Iterable[CvhEpisode]) -> Optional[CvhEpisode]:
-    """Нестрогое сопоставление названия озвучки: точное, затем по вхождению."""
+    """Loose matching of a dub name: exact first, then substring."""
     items = list(items)
     wanted = name.strip().lower()
     for item in items:

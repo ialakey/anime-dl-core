@@ -1,19 +1,18 @@
-"""VK Video и SovetRomantica на живых примерах.
+"""VK Video and SovetRomantica on live examples.
 
-Запуск:
-    python examples/06_vk_sovetromantica.py            # оба примера
-    python examples/06_vk_sovetromantica.py vk         # только VK
-    python examples/06_vk_sovetromantica.py sr <ссылка на embed SovetRomantica>
+Run it with:
+    python examples/06_vk_sovetromantica.py            # both examples
+    python examples/06_vk_sovetromantica.py vk         # VK only
+    python examples/06_vk_sovetromantica.py sr <SovetRomantica embed url>
 
-Что показывают примеры:
+What the examples show:
 
-* **VK Video** — рабочая серия аниме из сообщества SovetRomantica ВКонтакте:
-  прямые mp4 от 144p до 720p, HLS/DASH, обложка и длительность.
-* **SovetRomantica** — собственный сайт команды сейчас не работает (домен
-  ``sovetromantica.com`` перешёл другому владельцу, CDN отключён), поэтому
-  разбор показан на настоящей странице embed из веб-архива. Когда сайт вернётся
-  или если у вас есть зеркало — передайте ``base_url`` и всё заработает
-  как обычно.
+* **VK Video** — a working anime episode from the SovetRomantica VK community:
+  direct mp4 from 144p to 720p, HLS/DASH, the cover and the duration.
+* **SovetRomantica** — the team's own site is down (the ``sovetromantica.com``
+  domain changed hands, the CDN is off), so parsing is shown against a real
+  embed page from the web archive. Once the site is back, or if you have a
+  mirror, pass ``base_url`` and everything works as usual.
 """
 
 from __future__ import annotations
@@ -22,10 +21,10 @@ import sys
 
 import anime_dl_core as ap
 
-# Серия «Гримгар из пепла и фантазий» с субтитрами SovetRomantica, ВКонтакте
+# "Grimgar of Fantasy and Ash" with SovetRomantica subtitles, on VK
 VK_EPISODE = "https://vk.com/video_ext.php?oid=-33905270&id=456239024"
 
-# Настоящая страница embed SovetRomantica, сохранённая веб-архивом
+# A real SovetRomantica embed page as saved by the web archive
 SR_ARCHIVED = (
     "https://web.archive.org/web/20240905174049id_/"
     "https://sovetromantica.com/embed/episode_1073_1-dubbed"
@@ -33,41 +32,41 @@ SR_ARCHIVED = (
 
 
 def show(result: ap.PlayerResult) -> None:
-    print(f"  Плеер:       {result.player}")
-    print(f"  Название:    {result.title}")
-    print(f"  Озвучка:     {result.translation or '—'}")
+    print(f"  Player:      {result.player}")
+    print(f"  Title:       {result.title}")
+    print(f"  Translation: {result.translation or '—'}")
     if result.duration:
-        print(f"  Длительность:{result.duration // 60}:{result.duration % 60:02d}")
-    print(f"  Качества:    {result.qualities or 'только мастер-плейлист'}")
+        print(f"  Duration:    {result.duration // 60}:{result.duration % 60:02d}")
+    print(f"  Qualities:   {result.qualities or 'master playlist only'}")
     for segment in result.skip_segments:
-        print(f"  Пропуск:     {segment.kind}: {segment.start}-{segment.end} сек")
+        print(f"  Skip:        {segment.kind}: {segment.start}-{segment.end} s")
     for stream in result.streams[:6]:
         print(f"    {stream}")
     if len(result.streams) > 6:
-        print(f"    ... и ещё {len(result.streams) - 6}")
+        print(f"    ... and {len(result.streams) - 6} more")
 
 
 def demo_vk() -> None:
     print("=== VK Video ===")
 
     with ap.VkPlayer() as player:
-        # Ссылка на embed, обычная ссылка на видео и просто "oid_id" — всё подходит
+        # An embed url, an ordinary video url, or plain "oid_id" — all of them work
         result = player.extract(VK_EPISODE)
         show(result)
 
         best = result.best(kind="mp4")
-        print(f"\n  Лучший mp4 ({best.quality}p): {best.url[:90]}...")
-        print(f"  Заголовки:   {best.headers['Referer']}")
+        print(f"\n  Best mp4 ({best.quality}p): {best.url[:90]}...")
+        print(f"  Headers:     {best.headers['Referer']}")
 
-        # Проверяем, что ссылка живая: скачиваем мастер-плейлист
+        # Check the link is alive by fetching the master playlist
         master = result.master()
         if master is not None:
             content = player.fetch(master)
-            print(f"  Мастер-плейлист получен: {content.splitlines()[0]} ({len(content)} байт)")
+            print(f"  Master playlist fetched: {content.splitlines()[0]} ({len(content)} bytes)")
 
-        print("\n  Скачать:", best.ffmpeg_command("grimgar_08.mp4")[:110], "...")
+        print("\n  Download:", best.ffmpeg_command("grimgar_08.mp4")[:110], "...")
 
-    print("\n  Приватное/удалённое видео даёт понятную ошибку:")
+    print("\n  A private or deleted video fails with a readable error:")
     try:
         ap.extract("https://vk.com/video_ext.php?oid=-1&id=1&hash=deadbeef")
     except ap.ContentBlocked as error:
@@ -78,28 +77,28 @@ def demo_sovetromantica(url: str | None = None) -> None:
     print("\n=== SovetRomantica ===")
 
     if url:
-        # Свой домен/зеркало: base_url разрешает плееру ходить на любой хост
+        # Your own domain or a mirror: base_url lets the player call any host
         base = "/".join(url.split("/")[:3])
         with ap.SovetRomanticaPlayer(base_url=base) as player:
             show(player.extract(url))
         return
 
-    print("  Сайт команды сейчас офлайн, поэтому берём страницу из веб-архива.")
+    print("  The team's site is offline, so this uses a page from the web archive.")
     with ap.SovetRomanticaPlayer(base_url="https://web.archive.org", timeout=60) as player:
         try:
             result = player.extract(SR_ARCHIVED)
         except ap.AnimeDlCoreError as error:
-            print(f"  Не получилось: {error}")
+            print(f"  It did not work: {error}")
             return
     show(result)
-    print(f"  Следующая серия: {result.extra['next_episode']}")
-    print(f"  Превью для таймлайна: {result.extra['thumbnails']}")
+    print(f"  Next episode: {result.extra['next_episode']}")
+    print(f"  Timeline thumbnails: {result.extra['thumbnails']}")
     print(
-        "\n  Сами файлы (scu*.sovetromantica.com) сейчас недоступны — CDN выключен.\n"
-        "  Когда сайт вернётся, используйте:\n"
-        '      with ap.SovetRomanticaPlayer(base_url="https://новый-домен") as player:\n'
+        "\n  The files themselves (scu*.sovetromantica.com) are unreachable — the CDN is off.\n"
+        "  Once the site is back, use:\n"
+        '      with ap.SovetRomanticaPlayer(base_url="https://new-domain") as player:\n'
         '          result = player.extract("episode_1073_1-dubbed")\n'
-        "  А свежие релизы команды сейчас лежат ВКонтакте — их разбирает VkPlayer (пример выше)."
+        "  Current releases live on VK, and VkPlayer handles those (see the example above)."
     )
 
 

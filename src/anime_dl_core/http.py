@@ -1,7 +1,7 @@
-"""Тонкая обёртка над requests/aiohttp с одинаковым интерфейсом.
+"""A thin wrapper over requests/aiohttp with one shared interface.
 
-Синхронный и асинхронный клиенты возвращают один и тот же :class:`Response`,
-поэтому функции разбора страниц в плеерах не зависят от способа запроса.
+The sync and async clients return the same :class:`Response`, so the parsing
+code inside the players does not care how the request was made.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ DEFAULT_USER_AGENT = (
 
 @dataclass
 class Response:
-    """Ответ сервера в минимальном виде."""
+    """The server's answer, reduced to what the players need."""
 
     status: int
     text: str
@@ -40,7 +40,7 @@ class Response:
             return _json.loads(self.text)
         except ValueError as exc:
             raise ServiceError(
-                f"Ожидался JSON, получено что-то другое ({self.url}): {exc}",
+                f"Expected JSON, got something else ({self.url}): {exc}",
                 status=self.status,
                 url=self.url,
             ) from exc
@@ -48,7 +48,7 @@ class Response:
     def raise_for_status(self) -> "Response":
         if not self.ok:
             raise ServiceError(
-                f"Сервер вернул код {self.status} (ожидался 2xx): {self.url}",
+                f"Server returned status {self.status}, expected 2xx: {self.url}",
                 status=self.status,
                 url=self.url,
             )
@@ -63,14 +63,14 @@ def _merge_headers(base: Mapping[str, str], extra: Optional[Mapping[str, str]]) 
 
 
 class HttpClient:
-    """Синхронный http-клиент на requests.
+    """Synchronous http client built on requests.
 
-    :param proxy: адрес прокси вида http://host:port или socks5://user:pass@host:port
-        (для socks нужен ``pip install anime-dl-core[socks]``).
-    :param timeout: таймаут одного запроса в секундах.
-    :param user_agent: значение заголовка User-Agent.
-    :param headers: заголовки, добавляемые ко всем запросам.
-    :param session: готовая ``requests.Session`` (тогда закрывать её должен вызывающий код).
+    :param proxy: proxy address, http://host:port or socks5://user:pass@host:port
+        (socks needs ``pip install anime-dl-core[socks]``).
+    :param timeout: timeout for a single request, in seconds.
+    :param user_agent: value of the User-Agent header.
+    :param headers: headers added to every request.
+    :param session: an existing ``requests.Session`` (then closing it is the caller's job).
     """
 
     def __init__(
@@ -92,7 +92,7 @@ class HttpClient:
             )
         )
 
-    # -- запросы -------------------------------------------------------
+    # -- requests ------------------------------------------------------
     def get(
         self,
         url: str,
@@ -115,7 +115,7 @@ class HttpClient:
         return self._request("POST", url, headers=headers, data=data)
 
     def resolve_redirect(self, url: str, *, headers: Optional[Mapping[str, str]] = None) -> str:
-        """Возвращает адрес, на который редиректит url (или сам url, если редиректа нет)."""
+        """The address url redirects to, or url itself when there is no redirect."""
         resp = self._request("GET", url, headers=headers, allow_redirects=False, stream=True)
         location = resp.headers.get("Location") or resp.headers.get("location")
         if not location:
@@ -130,7 +130,7 @@ class HttpClient:
                 method, url, timeout=self.timeout, proxies=self.proxies, stream=stream, **kwargs
             )
         except requests.RequestException as exc:
-            raise NetworkError(f"Ошибка соединения при {method} {url}: {exc}") from exc
+            raise NetworkError(f"Connection failed during {method} {url}: {exc}") from exc
         try:
             text = "" if stream else resp.text
         finally:
@@ -138,7 +138,7 @@ class HttpClient:
                 resp.close()
         return Response(resp.status_code, text, str(resp.url), dict(resp.headers))
 
-    # -- жизненный цикл ------------------------------------------------
+    # -- lifecycle -----------------------------------------------------
     def close(self) -> None:
         if self._own_session:
             self.session.close()
@@ -151,7 +151,7 @@ class HttpClient:
 
 
 class AsyncHttpClient:
-    """Асинхронный клиент на aiohttp. Требует ``pip install anime-dl-core[async]``."""
+    """Asynchronous client built on aiohttp. Needs ``pip install anime-dl-core[async]``."""
 
     def __init__(
         self,
@@ -163,9 +163,9 @@ class AsyncHttpClient:
     ) -> None:
         try:
             import aiohttp  # noqa: F401
-        except ImportError as exc:  # pragma: no cover - зависит от окружения
+        except ImportError as exc:  # pragma: no cover - depends on the environment
             raise ImportError(
-                "Для асинхронного режима нужен aiohttp: pip install anime-dl-core[async]"
+                "Async mode needs aiohttp: pip install anime-dl-core[async]"
             ) from exc
         self.timeout = timeout
         self.proxy = proxy
@@ -184,7 +184,7 @@ class AsyncHttpClient:
                     from aiohttp_socks import ProxyConnector
                 except ImportError as exc:  # pragma: no cover
                     raise ImportError(
-                        "Для socks-прокси в асинхронном режиме нужен aiohttp-socks: "
+                        "A socks proxy in async mode needs aiohttp-socks: "
                         "pip install anime-dl-core[socks]"
                     ) from exc
                 connector = ProxyConnector.from_url(self.proxy)
@@ -240,7 +240,7 @@ class AsyncHttpClient:
                 text = await resp.text() if read_body else ""
                 return Response(resp.status, text, str(resp.url), dict(resp.headers))
         except aiohttp.ClientError as exc:
-            raise NetworkError(f"Ошибка соединения при {method} {url}: {exc}") from exc
+            raise NetworkError(f"Connection failed during {method} {url}: {exc}") from exc
 
     async def close(self) -> None:
         if self._session is not None and not self._session.closed:

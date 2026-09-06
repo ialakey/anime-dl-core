@@ -1,20 +1,20 @@
-"""Alloha (api.alloha.tv) — каталог и ссылки на встраиваемый плеер.
+"""Alloha (api.alloha.tv) — the catalogue and links to its embeddable player.
 
-Alloha раздаёт видео не прямыми ссылками, а через собственный iframe-плеер.
-Открытое API отдаёт по id (Кинопоиск / IMDb / TMDb / название) описание тайтла,
-список озвучек, сезоны с сериями и готовые ссылки на iframe для каждой
-комбинации «серия + озвучка».
+Alloha does not hand out direct video links; it serves video through its own iframe player.
+The open API takes an id (Kinopoisk / IMDb / TMDb / a name) and returns the title
+description, the list of dubs, the seasons with their episodes, and a ready iframe
+link for every "episode + dub" combination.
 
 .. important::
-   Прямых ссылок на видео (m3u8/mp4) Alloha не отдаёт: сам плеер получает их по
-   WebSocket из сильно обфусцированного бандла, и адрес нигде в html не лежит.
-   Поэтому Alloha реализована как источник (``sources``), а не как плеер
-   (``players``): результат — ссылка на iframe, которую можно вставить к себе
-   или открыть в браузере/webview. Если нужны именно файлы — понадобится
-   headless-браузер, обычным http-разбором их не достать.
+   Alloha never returns direct video links (m3u8/mp4): the player itself receives
+   them over a WebSocket from a heavily obfuscated bundle, and the address appears
+   nowhere in the html. That is why Alloha is a source (``sources``) rather than a
+   player (``players``): the result is an iframe link you can embed or open in a
+   browser/webview. If you specifically need the files, you need a headless browser —
+   plain http parsing will not get you there.
 
-Токен: у API есть публичный токен (используется по умолчанию). Если он
-перестанет работать, передайте свой: ``Alloha(token="...")``.
+Token: the API has a public token, used by default. Should it stop working, pass
+your own: ``Alloha(token="...")``.
 """
 
 from __future__ import annotations
@@ -27,16 +27,17 @@ from ..http import DEFAULT_USER_AGENT, HttpClient
 
 __all__ = ["Alloha", "AllohaItem", "AllohaTranslation", "PUBLIC_TOKEN"]
 
-#: Публичный токен Alloha, который ходит по открытым проектам.
+#: The public Alloha token that circulates in open projects.
 PUBLIC_TOKEN = "04941a9a3ca3ac16e2b4327347bbc1"
 
-#: Категории Alloha (поле ``category``).
+#: Alloha categories (the ``category`` field). Kept in Russian: these are the API's
+#: own values and they are what this client has always returned.
 CATEGORIES = {1: "фильм", 2: "мультфильм", 3: "мультсериал", 4: "сериал", 5: "аниме"}
 
 
 @dataclass(frozen=True)
 class AllohaTranslation:
-    """Озвучка со ссылкой на плеер."""
+    """A dub together with its player link."""
 
     id: str
     name: str
@@ -49,7 +50,7 @@ class AllohaTranslation:
 
 @dataclass
 class AllohaItem:
-    """Тайтл в базе Alloha."""
+    """A title in the Alloha catalogue."""
 
     name: str
     original_name: Optional[str]
@@ -82,9 +83,9 @@ class AllohaItem:
 
 
 class Alloha:
-    """Клиент открытого API Alloha.
+    """Client for the open Alloha API.
 
-    Пример::
+    Example::
 
         from anime_dl_core.sources import Alloha
 
@@ -92,11 +93,11 @@ class Alloha:
             anime = alloha.find(name="Атака титанов")
             print(anime.name, anime.year, anime.seasons)     # {1: [1..25], 2: [...], ...}
 
-            # у каждой серии свой набор озвучек
+            # every episode has its own set of dubs
             voices = alloha.translations_for(anime, season=1, episode=1)
             print([voice.name for voice in voices])
 
-            # ссылка на плеер конкретной серии в конкретной озвучке
+            # player link for one episode in one dub
             print(alloha.iframe(anime, season=1, episode=1, translation=voices[0].name))
     """
 
@@ -111,12 +112,12 @@ class Alloha:
         user_agent: str = DEFAULT_USER_AGENT,
         client: Optional[HttpClient] = None,
     ) -> None:
-        """:param token: токен API (по умолчанию публичный, см. :data:`PUBLIC_TOKEN`)."""
+        """:param token: API token (public by default, see :data:`PUBLIC_TOKEN`)."""
         self.token = token
         self._client = client or HttpClient(proxy=proxy, timeout=timeout, user_agent=user_agent)
         self._own_client = client is None
 
-    # -- запросы ----------------------------------------------------------
+    # -- requests -----------------------------------------------------------
     def find(
         self,
         *,
@@ -125,13 +126,13 @@ class Alloha:
         tmdb: Optional[Any] = None,
         name: Optional[str] = None,
     ) -> AllohaItem:
-        """Ищет тайтл по одному из идентификаторов или по названию."""
+        """Looks a title up by one of the ids, or by name."""
         params: Dict[str, Any] = {"token": self.token}
         for key, value in (("kp", kp), ("imdb", imdb), ("tmdb", tmdb), ("name", name)):
             if value is not None:
                 params[key] = value
         if len(params) == 1:
-            raise ValueError("Укажите один из параметров: kp, imdb, tmdb или name")
+            raise ValueError("Pass one of: kp, imdb, tmdb or name")
 
         resp = self._client.get(self.api_url, params=params).raise_for_status()
         data = resp.json()
@@ -139,21 +140,21 @@ class Alloha:
             message = data.get("error_info") or data
             if "token" in str(message).lower():
                 raise ServiceError(
-                    f"Alloha не приняла токен: {message}. Передайте свой: Alloha(token=...)"
+                    f"Alloha rejected the token: {message}. Pass your own: Alloha(token=...)"
                 )
-            raise NotFound(f"Alloha: ничего не найдено ({message})")
+            raise NotFound(f"Alloha: nothing was found ({message})")
 
         payload = data.get("data")
         if isinstance(payload, list):
             if not payload:
-                raise NotFound("Alloha вернула пустой результат")
+                raise NotFound("Alloha returned an empty result")
             payload = payload[0]
         return _item_from_api(payload)
 
     def episodes(self, item: AllohaItem, season: int) -> List[int]:
-        """Номера серий сезона."""
+        """Episode numbers of one season."""
         if season not in item.seasons:
-            raise NotFound(f"Сезон {season} не найден. Доступные: {sorted(item.seasons)}")
+            raise NotFound(f"Season {season} was not found. Available: {sorted(item.seasons)}")
         return item.seasons[season]
 
     def translations_for(
@@ -163,10 +164,10 @@ class Alloha:
         season: Optional[int] = None,
         episode: Optional[int] = None,
     ) -> List[AllohaTranslation]:
-        """Озвучки, доступные для тайтла целиком, сезона или конкретной серии.
+        """The dubs available for a whole title, a season, or one episode.
 
-        У сериала набор озвучек отличается от серии к серии, поэтому перед
-        :meth:`iframe` удобно посмотреть, что есть именно у этой серии.
+        A series carries a different set of dubs from episode to episode, so it is
+        worth checking what this episode actually has before calling :meth:`iframe`.
         """
         node = self._node(item, season=season, episode=episode)
         translations = _translation_map(node)
@@ -190,9 +191,9 @@ class Alloha:
         episode: Optional[int] = None,
         translation: Optional[str] = None,
     ) -> str:
-        """Ссылка на плеер: тайтла целиком, конкретной серии или конкретной озвучки.
+        """Player link: for a whole title, for one episode, or for one dub.
 
-        :param translation: имя озвучки (``"DEEP"``) или её id (``"260"``).
+        :param translation: dub name (``"DEEP"``) or dub id (``"260"``).
         """
         node = self._node(item, season=season, episode=episode)
 
@@ -205,11 +206,11 @@ class Alloha:
                 (value.get("translation") or value.get("name"))
                 for value in _translation_map(node).values()
             ]
-            raise NotFound(f"Озвучка {translation!r} не найдена. Доступные: {available}")
+            raise NotFound(f"Dub {translation!r} was not found. Available: {available}")
 
         iframe = node.get("iframe") or item.iframe
         if not iframe:
-            raise NotFound("Alloha не вернула ссылку на плеер для этого запроса")
+            raise NotFound("Alloha returned no player link for this request")
         return iframe
 
     def _node(
@@ -219,7 +220,7 @@ class Alloha:
         season: Optional[int] = None,
         episode: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """Узел ответа API: тайтл -> сезон -> серия."""
+        """A node of the API response: title -> season -> episode."""
         node: Dict[str, Any] = item.raw
         if not item.is_series:
             return node
@@ -230,7 +231,7 @@ class Alloha:
         seasons = node.get("seasons") or {}
         season_node = seasons.get(str(season)) or seasons.get(season)
         if not season_node:
-            raise NotFound(f"Сезон {season} не найден. Доступные: {sorted(item.seasons)}")
+            raise NotFound(f"Season {season} was not found. Available: {sorted(item.seasons)}")
         node = season_node
         if episode is not None:
             episodes = node.get("episodes") or {}
@@ -238,13 +239,13 @@ class Alloha:
             if not episode_node:
                 available = item.seasons.get(season, [])
                 raise NotFound(
-                    f"Серия {episode} не найдена в сезоне {season}. "
-                    f"Доступные: {available[:1]}..{available[-1:]}"
+                    f"Episode {episode} was not found in season {season}. "
+                    f"Available: {available[:1]}..{available[-1:]}"
                 )
             node = episode_node
         return node
 
-    # -- жизненный цикл ---------------------------------------------------
+    # -- lifecycle -----------------------------------------------------------
     def close(self) -> None:
         if self._own_client:
             self._client.close()
@@ -257,7 +258,7 @@ class Alloha:
 
 
 def _translation_map(node: Dict[str, Any]) -> Dict[str, Any]:
-    """Поле ``translation``: у серии это словарь озвучек, у тайтла — строка с перечислением."""
+    """The ``translation`` field: a dict of dubs on an episode, a comma-joined string on a title."""
     translations = node.get("translation")
     return translations if isinstance(translations, dict) else {}
 

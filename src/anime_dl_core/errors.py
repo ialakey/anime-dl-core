@@ -1,7 +1,7 @@
-"""Исключения библиотеки.
+"""Library exceptions.
 
-Все исключения наследуются от :class:`AnimeDlCoreError`, поэтому в вызывающем
-коде достаточно перехватывать его одного.
+Everything raised here derives from :class:`AnimeDlCoreError`, so calling code
+only has to catch that one.
 """
 
 from __future__ import annotations
@@ -20,19 +20,19 @@ __all__ = [
 
 
 class AnimeDlCoreError(Exception):
-    """Базовое исключение библиотеки."""
+    """Base class for every error this library raises."""
 
 
 class UnsupportedUrl(AnimeDlCoreError):
-    """Ссылка не подходит ни под один известный плеер."""
+    """The URL does not match any known player."""
 
 
 class NetworkError(AnimeDlCoreError):
-    """Сетевая ошибка: таймаут, DNS, обрыв соединения, ошибка прокси."""
+    """Network failure: timeout, DNS, dropped connection, proxy error."""
 
 
 class ServiceError(AnimeDlCoreError):
-    """Сервер плеера вернул неожиданный ответ (код != 200, не тот content-type)."""
+    """The player's server answered unexpectedly (status != 200, wrong content type)."""
 
     def __init__(self, message: str, *, status: "int | None" = None, url: "str | None" = None) -> None:
         super().__init__(message)
@@ -41,20 +41,20 @@ class ServiceError(AnimeDlCoreError):
 
 
 class ExtractionError(AnimeDlCoreError):
-    """Ответ получен, но разобрать его не удалось — вероятно, плеер изменил разметку."""
+    """The response arrived but could not be parsed — the player probably changed its markup."""
 
 
 class NoStreamsFound(ExtractionError):
-    """Страница разобрана, но ни одной ссылки на видео в ней нет."""
+    """The page parsed fine, but it contains no video links at all."""
 
 
 class DecryptionError(ExtractionError):
-    """Не удалось расшифровать ссылку (актуально для Kodik)."""
+    """A link could not be decrypted (relevant for Kodik)."""
 
 
 class ContentBlocked(AnimeDlCoreError):
-    """Контент заблокирован: гео-блокировка, возрастное ограничение, правообладатель."""
+    """Content is blocked: geo restriction, age gate, or a rights-holder takedown."""
 
 
 class NotFound(AnimeDlCoreError):
-    """Запрошенный эпизод/озвучка/видео отсутствует у плеера."""
+    """The requested episode, dub, or video does not exist on the player."""

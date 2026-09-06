@@ -47,6 +47,6 @@ packages = ["src/anime_dl_core"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
-    "live: тесты, которые ходят в интернет (запуск: ANIME_DL_CORE_LIVE=1 pytest -m live)",
+    "live: tests that reach the internet (run them with ANIME_DL_CORE_LIVE=1 pytest -m live)",
 ]
 asyncio_mode = "auto"

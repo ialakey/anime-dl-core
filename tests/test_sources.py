@@ -1,4 +1,4 @@
-"""Тесты помощников: сайт Animedia и API Alloha (на сохранённых ответах)."""
+"""Tests for the helpers: the Animedia site and the Alloha API (against saved responses)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from anime_dl_core.sources import Alloha, Animedia
 TITLE_URL = "https://amd.online/14-boruto-novoe-pokolenie-naruto.html"
 
 
-# -- сайт Animedia -------------------------------------------------------
+# -- the Animedia site -----------------------------------------------------
 def test_animedia_episodes(make_client):
     client = make_client({"amd.online/14-": fixture("animedia_title.html")})
     site = Animedia(client=client)
@@ -46,7 +46,7 @@ def test_animedia_search(make_client):
     client = make_client({"index.php": page})
     items = Animedia(client=client).search("Боруто")
 
-    assert len(items) == 1  # дубли схлопываются
+    assert len(items) == 1  # duplicates are collapsed
     assert items[0].id == "14"
     assert items[0].url.endswith("boruto-novoe-pokolenie-naruto.html")
 
@@ -54,7 +54,7 @@ def test_animedia_search(make_client):
 def test_animedia_search_empty(make_client):
     client = make_client({"index.php": "<html>Поиск не дал результатов</html>"})
     with pytest.raises(errors.NotFound):
-        Animedia(client=client).search("несуществующее аниме")
+        Animedia(client=client).search("несуществующее аниме")  # a title that does not exist
 
 
 def test_animedia_episodes_missing(make_client):
@@ -117,14 +117,14 @@ def test_alloha_unknown_episode(make_client):
     with pytest.raises(errors.NotFound):
         alloha.iframe(item, season=99)
     with pytest.raises(errors.NotFound):
-        alloha.iframe(item, season=1, episode=item.seasons[1][0], translation="Нет такой")
+        alloha.iframe(item, season=1, episode=item.seasons[1][0], translation="no such dub")
 
 
 def test_alloha_bad_token(make_client):
     client = make_client({"api.alloha.tv": '{"status":"error","error_info":"not valid token"}'})
     with pytest.raises(errors.ServiceError) as info:
         Alloha(client=client, token="bad").find(kp=1)
-    assert "токен" in str(info.value)
+    assert "token" in str(info.value)
 
 
 def test_alloha_requires_query():
@@ -133,7 +133,7 @@ def test_alloha_requires_query():
 
 
 def test_alloha_translations_per_episode(make_client):
-    """У серии набор озвучек свой, отличный от общего списка тайтла."""
+    """An episode carries its own set of dubs, different from the title-wide list."""
     client = make_client({"api.alloha.tv": fixture("alloha_series.json")})
     alloha = Alloha(client=client)
     item = alloha.find(kp=749374)
@@ -143,11 +143,11 @@ def test_alloha_translations_per_episode(make_client):
     voices = alloha.translations_for(item, season=season, episode=episode)
 
     assert voices and all(voice.iframe.startswith("http") for voice in voices)
-    # выбранная озвучка действительно даёт ссылку
+    # the chosen dub really does produce a link
     assert "translation=" in alloha.iframe(
         item, season=season, episode=episode, translation=voices[0].name
     )
-    # у фильма/тайтла без сезона отдаём общий список
+    # for a film, or a title with no season, the shared list is returned
     assert alloha.translations_for(item)
 
 

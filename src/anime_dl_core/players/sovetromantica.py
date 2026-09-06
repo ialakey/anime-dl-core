@@ -1,6 +1,6 @@
-"""Плеер SovetRomantica (страницы вида ``/embed/episode_<id>_<серия>-<dubbed|subtitles>``).
+"""The SovetRomantica player (pages like ``/embed/episode_<id>_<episode>-<dubbed|subtitles>``).
 
-Как устроен: в конце embed-страницы лежит js-конфиг плеера::
+How it works: the end of the embed page carries the player's js config::
 
     var nextEpisode='https://sovetromantica.com/embed/episode_1073_2-dubbed';
     var skips = [ { 'start': 174.79, 'end': 184.79, 'skip_to': 262.92 }, ... ];
@@ -13,21 +13,21 @@
         "points": points
     };
 
-Конфиг — не валидный json (в нём есть js-переменные), поэтому поля достаются
-по отдельности регулярками. Из ``skips`` получаются опенинг и эндинг.
+The config is not valid json (it contains js variables), so the fields are pulled
+out one by one with regexes. ``skips`` yields the opening and the ending.
 
 .. warning::
-   Собственный сайт SovetRomantica с 2025 года не работает: домен
-   ``sovetromantica.com`` перешёл другому владельцу и отдаёт чужой контент, а
-   CDN (``scu*.sovetromantica.com``) не резолвится. Команда собирает деньги на
-   перезапуск. Поэтому:
+   SovetRomantica's own site has been down since 2025: the ``sovetromantica.com``
+   domain changed hands and now serves somebody else's content, and the CDN
+   (``scu*.sovetromantica.com``) does not resolve. The team is raising money for
+   a relaunch. So:
 
-   * разбор проверен на настоящих страницах из веб-архива (см. живые тесты);
-   * когда сайт вернётся (или если у вас есть зеркало), укажите домен:
-     ``SovetRomanticaPlayer(base_url="https://новый-домен")`` — тогда плеер
-     примет ссылку на любой хост;
-   * свежие релизы SovetRomantica сейчас лежат в их сообществе ВКонтакте и
-     разбираются плеером :class:`~anime_dl_core.players.vk.VkPlayer`.
+   * parsing was verified against real pages from the web archive (see the live tests);
+   * when the site comes back (or if you have a mirror), point the player at the domain:
+     ``SovetRomanticaPlayer(base_url="https://new-domain")`` — it will then accept
+     a url on any host;
+   * current SovetRomantica releases live in their VK community and are handled
+     by :class:`~anime_dl_core.players.vk.VkPlayer`.
 """
 
 from __future__ import annotations
@@ -56,9 +56,9 @@ _EPISODE_SLUG = re.compile(r"/embed/(episode_[A-Za-z0-9_\-]+)", re.IGNORECASE)
 
 
 class SovetRomanticaPlayer(BasePlayer):
-    """Плеер SovetRomantica.
+    """The SovetRomantica player.
 
-    Пример (сайт лежит, поэтому берём настоящую страницу из веб-архива)::
+    Example (the site is down, so this uses a real page from the web archive)::
 
         from anime_dl_core import SovetRomanticaPlayer
 
@@ -67,11 +67,11 @@ class SovetRomanticaPlayer(BasePlayer):
             result = player.extract(archive + "https://sovetromantica.com/embed/episode_1073_1-dubbed")
             print(result.title)              # Gekkan Shoujo Nozaki-kun - Озвучка - Эпизод 1
             print(result.best().url)         # https://scu2.sovetromantica.com/.../episode_1.m3u8
-            print(result.skip_segments)      # опенинг и эндинг
+            print(result.skip_segments)      # opening and ending
 
-    Когда сайт вернётся::
+    Once the site is back::
 
-        with SovetRomanticaPlayer(base_url="https://новый-домен") as player:
+        with SovetRomanticaPlayer(base_url="https://new-domain") as player:
             result = player.extract("episode_1073_1-dubbed")
     """
 
@@ -81,16 +81,16 @@ class SovetRomanticaPlayer(BasePlayer):
     url_patterns = compile_patterns(r"sovetromantica\.[a-z]+/embed/")
     verified = True
     note = (
-        "сайт офлайн (домен перешёл другому владельцу); разбор проверен на страницах "
-        "из веб-архива, для зеркала укажите base_url"
+        "site offline (the domain changed hands); parsing was verified against web-archive "
+        "pages, point base_url at a mirror to use one"
     )
     base_url = "https://sovetromantica.com"
     playback_headers = {"Referer": "https://sovetromantica.com/"}
 
     def __init__(self, *args: Any, base_url: Optional[str] = None, **kwargs: Any) -> None:
         """
-        :param base_url: адрес сайта, если он переехал или это зеркало/веб-архив.
-            Если параметр задан, плеер принимает ссылку на любой хост.
+        :param base_url: site address, for when it has moved or this is a mirror/web archive.
+            When it is set, the player accepts a url on any host.
         """
         super().__init__(*args, **kwargs)
         self.custom_base = bool(base_url)
@@ -98,22 +98,22 @@ class SovetRomanticaPlayer(BasePlayer):
             self.base_url = base_url.rstrip("/")
             self.playback_headers = {"Referer": self.base_url + "/"}
 
-    # -- публичный интерфейс ------------------------------------------------
+    # -- public interface ---------------------------------------------------
     def embed_url(self, episode_slug: str) -> str:
-        """``episode_1073_1-dubbed`` -> полная ссылка на embed."""
+        """``episode_1073_1-dubbed`` -> the full embed url."""
         return f"{self.base_url}/embed/{episode_slug}"
 
     @staticmethod
     def episode_slug(url: str) -> Optional[str]:
-        """Слаг эпизода из ссылки (``episode_1073_1-dubbed``)."""
-        return search(_EPISODE_SLUG, str(url), what="слаг эпизода", default=None)
+        """The episode slug taken from a url (``episode_1073_1-dubbed``)."""
+        return search(_EPISODE_SLUG, str(url), what="the episode slug", default=None)
 
     def extract(self, url: str, *, resolve_qualities: bool = False, **_: Any) -> PlayerResult:
-        """Возвращает HLS-поток эпизода.
+        """Returns the HLS stream of one episode.
 
-        :param url: ссылка на embed или слаг вида ``episode_1073_1-dubbed``.
-        :param resolve_qualities: развернуть мастер-плейлист по качествам
-            (дополнительный запрос; молча пропускается, если CDN недоступен).
+        :param url: an embed url, or a slug like ``episode_1073_1-dubbed``.
+        :param resolve_qualities: expand the master playlist into per-quality streams
+            (one extra request; skipped silently when the CDN is unreachable).
         """
         url = self._normalize(url)
         page = self.client.get(url, headers={"Referer": self.base_url + "/"})
@@ -138,7 +138,7 @@ class SovetRomanticaPlayer(BasePlayer):
                     result.streams.extend(self._variant_streams(content.text, master))
         return result
 
-    # -- внутреннее ---------------------------------------------------------
+    # -- internals ----------------------------------------------------------
     def _normalize(self, url: str) -> str:
         url = str(url).strip()
         if url.startswith("episode_"):
@@ -147,7 +147,7 @@ class SovetRomanticaPlayer(BasePlayer):
             url = "https:" + url
         if not url.startswith("http"):
             return self.embed_url(url.lstrip("/").replace("embed/", ""))
-        # со своим base_url разрешаем любой хост: зеркало, локальный сервер, веб-архив
+        # with a custom base_url any host is allowed: a mirror, a local server, the web archive
         if self.custom_base or url_host(url) == url_host(self.base_url):
             return url
         return self.ensure_matches(url)
@@ -168,16 +168,16 @@ class SovetRomanticaPlayer(BasePlayer):
     def _build_result(self, text: str, url: str) -> PlayerResult:
         playlist = self._field(text, "file")
         if not playlist:
-            playlist = search(_ANY_M3U8, text, what="ссылку на m3u8", default=None)
+            playlist = search(_ANY_M3U8, text, what="an m3u8 link", default=None)
         if not playlist:
-            source = search(_SOURCE_TAG, text, what="тег <source>", default=None)
+            source = search(_SOURCE_TAG, text, what="a <source> tag", default=None)
             playlist = source if source and ".m3u8" in source else None
         if not playlist:
             raise NoStreamsFound(
-                f"На странице не найден плейлист SovetRomantica: {url}. "
-                "Проверьте, что это действительно страница embed: домен sovetromantica.com "
-                "сейчас принадлежит другому владельцу и отдаёт посторонний сайт. "
-                "Для зеркала или архива используйте SovetRomanticaPlayer(base_url=...)."
+                f"No SovetRomantica playlist was found on the page: {url}. "
+                "Check that this really is an embed page: the sovetromantica.com domain "
+                "now belongs to someone else and serves an unrelated site. "
+                "For a mirror or an archive use SovetRomanticaPlayer(base_url=...)."
             )
 
         playlist = playlist.replace("\\/", "/")
@@ -197,23 +197,23 @@ class SovetRomanticaPlayer(BasePlayer):
             extra={
                 "episode": slug,
                 "thumbnails": self._field(text, "thumbnails"),
-                "next_episode": search(_NEXT_EPISODE, text, what="следующий эпизод", default=None) or None,
+                "next_episode": search(_NEXT_EPISODE, text, what="the next episode", default=None) or None,
             },
         )
 
     @staticmethod
     def _field(text: str, name: str) -> Optional[str]:
-        value = search(_CONFIG_FIELD.format(name), text, what=f"поле {name}", default=None)
+        value = search(_CONFIG_FIELD.format(name), text, what=f"the {name} field", default=None)
         return value.replace("\\/", "/") if value else None
 
 
 def _parse_skips(text: str) -> List[SkipSegment]:
     """``var skips = [ {'start': 174.7, 'end': 184.7, 'skip_to': 262.9}, ... ]``.
 
-    ``start``–``end`` — когда показывать кнопку, ``skip_to`` — куда она перематывает,
-    то есть пропускаемый фрагмент это ``start``–``skip_to``.
+    ``start``–``end`` is when the button is shown and ``skip_to`` is where it jumps,
+    so the stretch actually skipped is ``start``–``skip_to``.
     """
-    block = search(_SKIPS_BLOCK, text, what="таймкоды", default=None)
+    block = search(_SKIPS_BLOCK, text, what="the timecodes", default=None)
     if not block:
         return []
     segments: List[SkipSegment] = []
@@ -229,6 +229,9 @@ def _parse_skips(text: str) -> List[SkipSegment]:
     return segments
 
 
+# The two labels below are SovetRomantica's own wording for a dub and for subtitles.
+# They are kept in Russian on purpose: they are matched against the page title and
+# are part of what PlayerResult.translation has always returned.
 def _translation_from_slug(slug: Optional[str]) -> Optional[str]:
     if not slug:
         return None

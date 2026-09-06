@@ -1,8 +1,8 @@
-"""Плеер Aniboom (aniboom.one) — основной плеер AnimeGO.
+"""The Aniboom player (aniboom.one) — the player AnimeGO uses by default.
 
-Как устроен: страница embed содержит тег ``<video id="video" data-parameters="...">``,
-в атрибуте лежит html-экранированный json со ссылками на MPD (DASH) и M3U8 (HLS),
-постером, длительностью и максимальным качеством.
+How it works: the embed page carries a ``<video id="video" data-parameters="...">``
+tag whose attribute holds html-escaped json with the MPD (DASH) and M3U8 (HLS)
+links, the poster, the duration and the highest quality on offer.
 """
 
 from __future__ import annotations
@@ -24,9 +24,9 @@ _ID_FROM_URL = re.compile(r"/embed/([A-Za-z0-9_-]+)")
 
 
 class AniboomPlayer(BasePlayer):
-    """Плеер Aniboom.
+    """The Aniboom player.
 
-    Пример::
+    Example::
 
         from anime_dl_core import AniboomPlayer
 
@@ -40,14 +40,14 @@ class AniboomPlayer(BasePlayer):
     domains = ("aniboom.one", "aniboom.tv")
     url_patterns = compile_patterns(r"aniboom\.[a-z]+/embed/")
     embed_base = "https://aniboom.one/embed/"
-    #: Referer по умолчанию — без него aniboom отдаёт заглушку.
+    #: Default Referer — without it aniboom serves a placeholder.
     default_referer = "https://animego.org/"
     playback_headers = {"Referer": "https://aniboom.one/", "Origin": "https://aniboom.one"}
 
-    # -- публичный интерфейс -------------------------------------------
+    # -- public interface ----------------------------------------------
     @classmethod
     def embed_url(cls, video_id: str, *, episode: Optional[int] = None, translation: Optional[int] = None) -> str:
-        """Собирает ссылку на embed по id видео."""
+        """Builds the embed url from a video id."""
         url = f"{cls.embed_base}{video_id}"
         params = []
         if episode is not None:
@@ -58,8 +58,8 @@ class AniboomPlayer(BasePlayer):
 
     @staticmethod
     def video_id(url: str) -> str:
-        """Достаёт id видео из ссылки на embed."""
-        return search(_ID_FROM_URL, url, what="id видео в ссылке Aniboom")
+        """Pulls the video id out of an embed url."""
+        return search(_ID_FROM_URL, url, what="the video id in the Aniboom url")
 
     def extract(
         self,
@@ -69,13 +69,13 @@ class AniboomPlayer(BasePlayer):
         resolve_qualities: bool = True,
         **_: Any,
     ) -> PlayerResult:
-        """Разбирает embed-страницу Aniboom.
+        """Parses an Aniboom embed page.
 
-        :param url: ссылка вида ``https://aniboom.one/embed/<id>`` (можно с параметрами
-            ``?episode=&translation=``) либо просто ``<id>``.
-        :param referer: сайт, с которого якобы открыт плеер (по умолчанию animego.org).
-        :param resolve_qualities: скачать мастер-плейлист HLS и добавить потоки
-            по каждому качеству отдельно (одиин дополнительный запрос).
+        :param url: a ``https://aniboom.one/embed/<id>`` url (query parameters
+            ``?episode=&translation=`` are allowed), or just ``<id>``.
+        :param referer: the site the player is supposedly opened from (animego.org by default).
+        :param resolve_qualities: fetch the HLS master playlist and add one stream
+            per quality (costs one extra request).
         """
         url = self._normalize(url)
         resp = self.client.get(url, headers={"Referer": referer or self.default_referer})
@@ -109,22 +109,23 @@ class AniboomPlayer(BasePlayer):
                     result.streams.extend(self._variant_streams(content.text, master))
         return result
 
-    # -- разбор ---------------------------------------------------------
+    # -- parsing ----------------------------------------------------------
     def _normalize(self, url: str) -> str:
-        if "/" not in url:  # передали только id видео
+        if "/" not in url:  # only a video id was passed
             return self.embed_url(url)
         return self.ensure_matches(url)
 
     @staticmethod
     def _parse_page(resp: Response, url: str) -> Dict[str, Any]:
         resp.raise_for_status()
-        raw = search(_VIDEO_TAG, resp.text, what="тег <video data-parameters> на странице Aniboom", default=None)
+        raw = search(_VIDEO_TAG, resp.text, what="the <video data-parameters> tag on the Aniboom page", default=None)
         if raw is None:
+            # "не доступно" is the wording Aniboom itself puts on a blocked page.
             if "не доступно" in resp.text or "video-error" in resp.text:
-                raise ContentBlocked(f"Aniboom не отдаёт видео (гео-блокировка или удалено): {url}")
+                raise ContentBlocked(f"Aniboom is not serving the video (geo-blocked or removed): {url}")
             raise ExtractionError(
-                f"На странице Aniboom нет тега <video data-parameters=...>: {url}. "
-                "Возможно, изменилась разметка плеера."
+                f"The Aniboom page has no <video data-parameters=...> tag: {url}. "
+                "The player markup has probably changed."
             )
         return json_from_attribute(raw)
 
@@ -135,7 +136,7 @@ class AniboomPlayer(BasePlayer):
 
     @staticmethod
     def _src(value: Any) -> Optional[str]:
-        """Значения hls/dash приходят как json-строка ``{"src": "...", "type": "..."}``."""
+        """The hls/dash values arrive as a json string ``{"src": "...", "type": "..."}``."""
         if not value:
             return None
         if isinstance(value, str):
@@ -167,7 +168,7 @@ class AniboomPlayer(BasePlayer):
                 )
 
         if not streams:
-            raise NoStreamsFound(f"Aniboom не вернул ни hls, ни dash для {url}. Данные плеера: {data}")
+            raise NoStreamsFound(f"Aniboom returned neither hls nor dash for {url}. Player data: {data}")
 
         return PlayerResult(
             player=self.name,
@@ -186,7 +187,7 @@ class AniboomPlayer(BasePlayer):
         )
 
     def _variant_streams(self, master_content: str, master: Stream) -> List[Stream]:
-        """Разворачивает мастер-плейлист в отдельные потоки по качествам."""
+        """Expands a master playlist into one stream per quality."""
         streams = []
         for variant in parse_master_playlist(master_content, master.url):
             streams.append(

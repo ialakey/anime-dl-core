@@ -506,17 +506,21 @@ anime-dl-core -33905270_456239024 --json          # VK понимает и го�
 Пример вывода:
 
 ```
-Плеер: kodik
-Озвучка: 2x2
-Пропуск: opening 30-110s, ending 1375-1445s
-Потоки (6):
+Player: kodik
+Translation: 2x2
+Skip: opening 30-110s, ending 1375-1445s
+Streams (6):
   [hls    360p] https://cloud.solodcdn.com/.../360.mp4:hls:manifest.m3u8
   [mp4    360p] https://cloud.solodcdn.com/.../360.mp4
   ...
-Заголовки для скачивания:
+Headers required for downloading:
   Referer: https://kodikplayer.com/
   User-Agent: Mozilla/5.0 ...
 ```
+
+Вывод CLI, docstring'и и тексты ошибок — на английском. Значения, которые приходят
+с самих сайтов, остаются как есть: названия, озвучки и поле `category` у Alloha
+возвращаются по-русски.
 
 ## Прокси, заголовки, таймауты
 

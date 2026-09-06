@@ -1,6 +1,6 @@
-"""Асинхронный разбор нескольких плееров сразу (нужен aiohttp).
+"""Parsing several players at once, asynchronously (needs aiohttp).
 
-Запуск:
+Run it with:
     pip install anime-dl-core[async]
     python examples/04_async_batch.py
 """
@@ -22,16 +22,16 @@ async def resolve(url: str) -> None:
     try:
         result = await ap.extract_async(url, timeout=25)
     except ap.AnimeDlCoreError as error:
-        print(f"[{url[:40]}...] ошибка: {error}")
+        print(f"[{url[:40]}...] error: {error}")
         return
-    print(f"[{result.player:<9}] качества={result.qualities or 'auto'} -> {result.best().url[:80]}")
+    print(f"[{result.player:<9}] qualities={result.qualities or 'auto'} -> {result.best().url[:80]}")
 
 
 async def main() -> None:
-    # Разные плееры разбираются параллельно
+    # different players are parsed in parallel
     await asyncio.gather(*(resolve(url) for url in URLS))
 
-    # Один плеер, много серий: переиспользуем соединение
+    # one player, many episodes: the connection is reused
     async with ap.AnilibriaPlayer() as player:
         results = await asyncio.gather(
             *(player.aextract("bleach", episode=number) for number in (1, 2, 3))
