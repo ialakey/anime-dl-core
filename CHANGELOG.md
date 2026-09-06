@@ -5,6 +5,27 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [semantic versioning](https://semver.org/).
 
+## [0.4.1] — 2026-09-06
+
+No library changes: the code of 0.4.1 is identical to 0.4.0. The release exists
+because everything around it moved.
+
+### Changed
+
+- **Uploads to PyPI now go through Trusted Publishing** (OIDC). The
+  `PYPI_API_TOKEN` secret is gone — there is no long-lived credential to leak or
+  rotate any more, and PyPI accepts a short-lived token issued to this
+  repository and this workflow only. As a side effect the release carries
+  [attestations](https://docs.pypi.org/attestations/) (PEP 740): a proof that
+  the files were built by this workflow from this commit.
+- A manual run of the publish workflow passes `skip-existing`, so it can be used
+  to check the credentials without cutting a release; tag runs stay strict.
+- The rolling `latest` pre-release drops stale assets instead of accumulating
+  them — after a version bump it used to hold two builds at once.
+- The PyPI badge URL carries `cacheSeconds`, which makes GitHub's image proxy
+  re-fetch it; it was serving the "not found" image cached from before the first
+  upload.
+
 ## [0.4.0] — 2026-09-06
 
 ### Breaking changes

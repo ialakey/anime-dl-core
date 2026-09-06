@@ -3,7 +3,7 @@
 **English** · [Русский](README.ru.md)
 
 [![CI](https://github.com/ialakey/anime-dl-core/actions/workflows/build.yml/badge.svg)](https://github.com/ialakey/anime-dl-core/actions/workflows/build.yml)
-[![PyPI](https://img.shields.io/pypi/v/anime-dl-core)](https://pypi.org/project/anime-dl-core/)
+[![PyPI](https://img.shields.io/pypi/v/anime-dl-core?cacheSeconds=3600)](https://pypi.org/project/anime-dl-core/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
