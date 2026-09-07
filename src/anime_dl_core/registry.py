@@ -1,4 +1,4 @@
-"""Реестр плееров и функции-фасады :func:`extract` / :func:`extract_async`."""
+"""The player registry and the :func:`extract` / :func:`extract_async` facades."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ __all__ = [
     "extract_async",
 ]
 
-#: Все известные плееры. Порядок важен: первый подошедший и будет использован.
+#: Every known player. Order matters: the first one that matches is the one used.
 PLAYERS: List[Type[BasePlayer]] = [
     AniboomPlayer,
     CvhPlayer,
@@ -40,12 +40,12 @@ PLAYERS: List[Type[BasePlayer]] = [
     SovetRomanticaPlayer,
 ]
 
-# Параметры, которые относятся к http-клиенту, а не к конкретному плееру.
+# Arguments that belong to the http client rather than to a specific player.
 _CLIENT_KEYS = ("proxy", "timeout", "user_agent", "headers", "client", "async_client")
 
 
 def register(player: Type[BasePlayer], *, first: bool = False) -> Type[BasePlayer]:
-    """Добавляет свой плеер в реестр (можно использовать как декоратор).
+    """Registers your own player (can be used as a decorator).
 
     >>> @register
     ... class MyPlayer(BasePlayer):
@@ -60,19 +60,19 @@ def register(player: Type[BasePlayer], *, first: bool = False) -> Type[BasePlaye
 
 
 def all_players() -> Tuple[Type[BasePlayer], ...]:
-    """Кортеж всех зарегистрированных плееров."""
+    """Every registered player, as a tuple."""
     return tuple(PLAYERS)
 
 
 def player_names() -> List[str]:
-    """Имена всех плееров."""
+    """Names of every player."""
     return [player.name for player in PLAYERS]
 
 
 def get_player_class(url_or_name: str) -> Type[BasePlayer]:
-    """Класс плеера по ссылке или по имени (``"kodik"``).
+    """The player class for a url or for a name (``"kodik"``).
 
-    :raises UnsupportedUrl: если подходящего плеера нет.
+    :raises UnsupportedUrl: when no player matches.
     """
     value = str(url_or_name).strip()
     for player in PLAYERS:
@@ -82,12 +82,12 @@ def get_player_class(url_or_name: str) -> Type[BasePlayer]:
         if player.matches(value):
             return player
     raise UnsupportedUrl(
-        f"Не нашлось плеера для {value!r}. Известные плееры: {', '.join(player_names())}"
+        f"No player matched {value!r}. Known players: {', '.join(player_names())}"
     )
 
 
 def get_player(url_or_name: str, **kwargs: Any) -> BasePlayer:
-    """Готовый экземпляр плеера для ссылки (или по имени плеера)."""
+    """A ready player instance for a url (or for a player name)."""
     client_kwargs = {key: kwargs[key] for key in _CLIENT_KEYS if key in kwargs}
     return get_player_class(url_or_name)(**client_kwargs)
 
@@ -99,11 +99,11 @@ def _split_kwargs(kwargs: Mapping[str, Any]) -> "tuple[Dict[str, Any], Dict[str,
 
 
 def extract(url: str, **kwargs: Any) -> PlayerResult:
-    """Определяет плеер по ссылке и возвращает ссылки на видео.
+    """Detects the player from the url and returns the video links.
 
-    Параметры ``proxy``, ``timeout``, ``user_agent``, ``headers``, ``client``
-    уходят в http-клиент, всё остальное (``episode``, ``season``, ``studio``,
-    ``referer``, ...) — в метод ``extract`` конкретного плеера.
+    ``proxy``, ``timeout``, ``user_agent``, ``headers`` and ``client`` go to the
+    http client; everything else (``episode``, ``season``, ``studio``,
+    ``referer``, ...) goes to that player's ``extract`` method.
 
     >>> extract("https://video.sibnet.ru/shell.php?videoid=2589828").best().url
     'https://video.sibnet.ru/v/.../2589828.mp4'
@@ -117,7 +117,7 @@ def extract(url: str, **kwargs: Any) -> PlayerResult:
 
 
 async def extract_async(url: str, **kwargs: Any) -> PlayerResult:
-    """Асинхронный вариант :func:`extract` (нужен ``pip install anime-dl-core[async]``)."""
+    """Async counterpart of :func:`extract` (needs ``pip install anime-dl-core[async]``)."""
     client_kwargs, extract_kwargs = _split_kwargs(kwargs)
     player = get_player_class(url)(**client_kwargs)
     try:
@@ -127,7 +127,7 @@ async def extract_async(url: str, **kwargs: Any) -> PlayerResult:
 
 
 def describe_players() -> List[Dict[str, Any]]:
-    """Краткая справка по плеерам — используется в CLI (``--list``)."""
+    """A short summary of the players — used by the CLI (``--list``)."""
     return [
         {
             "name": player.name,
@@ -140,5 +140,5 @@ def describe_players() -> List[Dict[str, Any]]:
     ]
 
 
-# Значение по умолчанию доступно и отсюда — удобно для своих клиентов.
+# The default is exported here too — handy when building your own client.
 DEFAULT_USER_AGENT = DEFAULT_USER_AGENT

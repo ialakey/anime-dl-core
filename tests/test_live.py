@@ -1,12 +1,12 @@
-"""Живые тесты — ходят в интернет.
+"""Live tests — these go out to the internet.
 
-Запуск::
+Run them with::
 
     ANIME_DL_CORE_LIVE=1 pytest -m live          # bash
     $env:ANIME_DL_CORE_LIVE=1; pytest -m live    # PowerShell
 
-Ссылки в тестах со временем протухают (аниме удаляют, id меняются). Если тест
-упал с NotFound — обновите константы ниже, это не поломка библиотеки.
+The links here go stale over time (anime get removed, ids change). A test failing
+with NotFound means the constants below need updating, not that the library broke.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ def player_links(animego):
 def _first(links, name):
     link = next((item for item in links if item.player.lower() == name), None)
     if link is None:
-        pytest.skip(f"AnimeGO сейчас не отдаёт плеер {name} для {ANIME_TITLE!r}")
+        pytest.skip(f"AnimeGO is not serving the {name} player for {ANIME_TITLE!r} right now")
     return link
 
 
@@ -50,7 +50,7 @@ def test_animego_search_and_players(animego, player_links):
 def test_aniboom_live(player_links):
     result = ap.extract(_first(player_links, "aniboom").embed)
     assert result.player == "aniboom"
-    assert result.qualities, "мастер-плейлист должен разворачиваться в качества"
+    assert result.qualities, "the master playlist should expand into qualities"
     assert result.best(kind="hls").url.endswith(".m3u8")
 
 
@@ -88,7 +88,7 @@ async def test_async_live(player_links):
 
 
 def test_streams_are_downloadable(player_links):
-    """Проверяем, что по ссылке реально отдаётся плейлист (с нужными заголовками)."""
+    """Checks that the link really does serve a playlist (with the required headers)."""
     result = ap.extract(_first(player_links, "aniboom").embed, resolve_qualities=False)
     with ap.AniboomPlayer() as player:
         content = player.fetch(result.master())
@@ -96,14 +96,14 @@ def test_streams_are_downloadable(player_links):
 
 
 # -- VK Video -----------------------------------------------------------
-#: Серия аниме в сообществе SovetRomantica ВКонтакте (открытое видео)
+#: An anime episode in the SovetRomantica VK community (a public video)
 VK_ANIME = "https://vk.com/video_ext.php?oid=-33905270&id=456239024"
 
 
 def test_vk_live():
     result = ap.extract(VK_ANIME)
     assert result.player == "vk"
-    assert result.qualities, "ожидались mp4 разных качеств"
+    assert result.qualities, "mp4 in several qualities was expected"
     assert result.title and result.duration
     assert result.best(kind="mp4").url.startswith("http")
 
@@ -126,8 +126,8 @@ def test_vk_unavailable_video_raises():
 
 
 # -- SovetRomantica -----------------------------------------------------
-# Свой сайт SovetRomantica сейчас не работает (домен перешёл другому владельцу),
-# поэтому разбор проверяется на настоящей странице из веб-архива.
+# SovetRomantica's own site is down (the domain changed hands), so parsing is
+# checked against a real page from the web archive.
 SR_ARCHIVE = (
     "https://web.archive.org/web/20240905174049id_/"
     "https://sovetromantica.com/embed/episode_1073_1-dubbed"
@@ -139,7 +139,7 @@ def test_sovetromantica_live_from_archive():
         try:
             result = player.extract(SR_ARCHIVE)
         except (ap.ServiceError, ap.NetworkError) as error:
-            pytest.skip(f"веб-архив недоступен: {error}")
+            pytest.skip(f"the web archive is unreachable: {error}")
 
     assert result.player == "sovetromantica"
     assert result.title == "Gekkan Shoujo Nozaki-kun - Озвучка - Эпизод 1"
@@ -148,7 +148,7 @@ def test_sovetromantica_live_from_archive():
 
 
 def test_sovetromantica_domain_is_taken_over():
-    """Пока сайт не вернулся, обычная ссылка приводит к понятной ошибке."""
+    """While the site is down, an ordinary link should fail with a readable error."""
     with ap.SovetRomanticaPlayer(timeout=30) as player:
         with pytest.raises(ap.AnimeDlCoreError):
             player.extract("episode_1073_1-dubbed")
@@ -169,7 +169,7 @@ def test_animedia_live():
         result = ap.extract(episodes[1])
 
     assert result.player == "animedia"
-    assert result.qualities, "мастер-плейлист должен разворачиваться в качества"
+    assert result.qualities, "the master playlist should expand into qualities"
     assert result.best().url.endswith(".m3u8")
 
 
@@ -182,7 +182,7 @@ def test_animedia_stream_is_downloadable():
 
 # -- Alloha -------------------------------------------------------------
 def test_alloha_live():
-    """Alloha отдаёт каталог и ссылки на свой iframe (прямых файлов у неё нет)."""
+    """Alloha serves a catalogue and links to its own iframe (it has no direct files)."""
     from anime_dl_core.sources import Alloha
 
     with Alloha() as alloha:

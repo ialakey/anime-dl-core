@@ -1,4 +1,4 @@
-"""Тесты моделей, утилит и реестра плееров."""
+"""Tests for the models, the utilities and the player registry."""
 
 from __future__ import annotations
 
@@ -44,11 +44,11 @@ def _result() -> PlayerResult:
     )
 
 
-# -- модели --------------------------------------------------------------
+# -- models ---------------------------------------------------------------
 def test_best_prefers_highest_quality():
     result = _result()
     assert result.best().quality == 720
-    assert result.best().kind is StreamKind.MP4  # при равном качестве mp4 удобнее
+    assert result.best().kind is StreamKind.MP4  # at equal quality mp4 is the handier one
     assert result.best(kind="hls").url == "https://cdn/720.m3u8"
     assert result.best(max_quality=360).quality == 360
 
@@ -93,7 +93,7 @@ def test_skip_segment_duration():
     assert SkipSegment(30, 110).duration == 80
 
 
-# -- утилиты -------------------------------------------------------------
+# -- utilities ------------------------------------------------------------
 def test_parse_master_playlist_sorted_by_quality():
     variants = parse_master_playlist(fixture("aniboom_master.m3u8"), "https://cdn/qk/id/master.m3u8")
     assert [v["height"] for v in variants] == [360, 480, 720, 1080]
@@ -105,7 +105,7 @@ def test_caesar_and_kodik_decoding():
     assert caesar_shift("abcZ", 1) == "bcdA"
     assert caesar_shift(caesar_shift("Hello, мир!", 7), -7) == "Hello, мир!"
 
-    # реальная зашифрованная ссылка из ответа /ftor
+    # a real encrypted link out of a /ftor response
     import json
 
     links = json.loads(fixture("kodik_ftor.json"))["links"]
@@ -113,7 +113,7 @@ def test_caesar_and_kodik_decoding():
     url, shift = decode_kodik_url(encrypted)
     assert url.startswith("//") or url.startswith("http")
     assert url.endswith(":hls:manifest.m3u8")
-    # найденный сдвиг можно переиспользовать
+    # the shift that worked can be reused
     assert decode_kodik_url(encrypted, known_shift=shift)[0] == url
 
 
@@ -131,7 +131,7 @@ def test_url_helpers():
     assert quality_from_label("master") is None
 
 
-# -- реестр --------------------------------------------------------------
+# -- registry --------------------------------------------------------------
 @pytest.mark.parametrize(
     "url, expected",
     [
@@ -165,7 +165,7 @@ def test_register_custom_player():
         title = "Dummy"
         domains = ("dummy.test",)
 
-        def extract(self, url, **kwargs):  # pragma: no cover - логика не важна
+        def extract(self, url, **kwargs):  # pragma: no cover - the logic does not matter here
             return PlayerResult(player=self.name, source_url=url)
 
     registry.register(DummyPlayer, first=True)
@@ -197,7 +197,7 @@ def test_players_declare_metadata():
         assert player.domains or player.url_patterns
 
 
-# -- помощник AnimeGO ----------------------------------------------------
+# -- the AnimeGO helper -----------------------------------------------------
 def test_animego_search_parses_cards():
     from anime_dl_core.http import Response
     from anime_dl_core.sources import AnimeGo
@@ -244,4 +244,4 @@ def test_animego_search_reports_empty_result():
 
     with pytest.raises(errors.NotFound) as info:
         AnimeGo(client=Client()).search("дандадан")
-    assert "ничего не найдено" in str(info.value)
+    assert "nothing was found" in str(info.value)

@@ -1,4 +1,4 @@
-"""Общие приспособления для тестов: загрузка фикстур и http-клиент-заглушка."""
+"""Shared test scaffolding: fixture loading and a stub http client."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ RouteValue = Union[str, Response, Callable[[str], Response]]
 
 
 def fixture(name: str) -> str:
-    """Содержимое файла из ``tests/fixtures``."""
+    """Contents of a file from ``tests/fixtures``."""
     return (FIXTURES / name).read_text(encoding="utf-8")
 
 
@@ -26,9 +26,9 @@ def fixture_json(name: str) -> Any:
 
 
 class FakeClient:
-    """Заглушка вместо :class:`anime_dl_core.http.HttpClient`.
+    """A stand-in for :class:`anime_dl_core.http.HttpClient`.
 
-    Маршруты задаются подстрокой url: первый подошедший и отдаётся.
+    Routes are keyed by a substring of the url: the first match wins.
     """
 
     def __init__(self, routes: Mapping[str, RouteValue], *, user_agent: str = DEFAULT_USER_AGENT) -> None:
@@ -37,7 +37,7 @@ class FakeClient:
         self.calls: List[Dict[str, Any]] = []
         self.closed = False
 
-    # -- интерфейс HttpClient -----------------------------------------
+    # -- the HttpClient interface ---------------------------------------
     def get(self, url: str, **kwargs: Any) -> Response:
         return self._respond("GET", url, kwargs)
 
@@ -51,7 +51,7 @@ class FakeClient:
     def close(self) -> None:
         self.closed = True
 
-    # -- внутреннее ----------------------------------------------------
+    # -- internals -------------------------------------------------------
     def _respond(self, method: str, url: str, kwargs: Dict[str, Any]) -> Response:
         self.calls.append({"method": method, "url": url, **kwargs})
         for pattern, value in self.routes.items():
@@ -61,18 +61,18 @@ class FakeClient:
                 if isinstance(value, Response):
                     return value
                 return Response(200, value, url)
-        raise AssertionError(f"В тесте нет маршрута для {method} {url}")
+        raise AssertionError(f"The test defines no route for {method} {url}")
 
     def last_call(self, method: Optional[str] = None) -> Dict[str, Any]:
         for call in reversed(self.calls):
             if method is None or call["method"] == method:
                 return call
-        raise AssertionError("Запросов не было")
+        raise AssertionError("No requests were made")
 
 
 @pytest.fixture
 def make_client():
-    """Фабрика :class:`FakeClient` для тестов."""
+    """A :class:`FakeClient` factory for tests."""
 
     def _make(routes: Mapping[str, RouteValue]) -> FakeClient:
         return FakeClient(routes)
@@ -81,10 +81,10 @@ def make_client():
 
 
 def pytest_collection_modifyitems(config: Any, items: List[Any]) -> None:
-    """Живые тесты пропускаются, если не выставлен ANIME_DL_CORE_LIVE=1."""
+    """Live tests are skipped unless ANIME_DL_CORE_LIVE=1 is set."""
     if os.environ.get("ANIME_DL_CORE_LIVE") == "1":
         return
-    skip = pytest.mark.skip(reason="нужен доступ в интернет: ANIME_DL_CORE_LIVE=1")
+    skip = pytest.mark.skip(reason="needs internet access: ANIME_DL_CORE_LIVE=1")
     for item in items:
         if "live" in item.keywords:
             item.add_marker(skip)

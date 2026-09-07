@@ -1,7 +1,7 @@
-"""Самый простой сценарий: ссылка на плеер -> ссылки на видео.
+"""The simplest run: a player url in, video links out.
 
-Запуск:
-    python examples/01_basic.py [ссылка на плеер]
+Run it with:
+    python examples/01_basic.py [player url]
 """
 
 from __future__ import annotations
@@ -16,28 +16,28 @@ DEFAULT_URL = "https://video.sibnet.ru/shell.php?videoid=2589828"
 def main() -> None:
     url = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_URL
 
-    # extract сам определяет плеер по домену ссылки
+    # extract works the player out from the url's domain on its own
     result = ap.extract(url)
 
-    print(f"Плеер:      {result.player}")
-    print(f"Название:   {result.title or '—'}")
-    print(f"Озвучка:    {result.translation or '—'}")
-    qualities = result.qualities or "неизвестны (мастер-плейлист или один файл)"
-    print(f"Качества:   {qualities}")
+    print(f"Player:      {result.player}")
+    print(f"Title:       {result.title or '—'}")
+    print(f"Translation: {result.translation or '—'}")
+    qualities = result.qualities or "unknown (a master playlist, or a single file)"
+    print(f"Qualities:   {qualities}")
     for segment in result.skip_segments:
-        print(f"Пропуск:    {segment.kind}: {segment.start}-{segment.end} сек")
+        print(f"Skip:        {segment.kind}: {segment.start}-{segment.end} s")
 
-    print("\nВсе найденные потоки:")
+    print("\nEvery stream that was found:")
     for stream in result.streams:
         print(f"  {stream}")
 
     best = result.best()
-    print(f"\nЛучший поток: {best.url}")
-    print("Заголовки, без которых видео не отдадут:")
+    print(f"\nBest stream: {best.url}")
+    print("Headers without which the video will not be served:")
     for key, value in best.headers.items():
         print(f"  {key}: {value}")
 
-    print("\nСкачать через ffmpeg:")
+    print("\nDownload it with ffmpeg:")
     print(" ", best.ffmpeg_command("episode.mp4"))
 
 

@@ -1,4 +1,4 @@
-"""Вспомогательные функции: разбор html/js, m3u8 и дешифровка ссылок Kodik."""
+"""Helpers: html/js parsing, m3u8 parsing, and Kodik link decryption."""
 
 from __future__ import annotations
 
@@ -31,40 +31,40 @@ def search(
     text: str,
     *,
     group: int = 1,
-    what: str = "нужный фрагмент",
+    what: str = "the fragment we needed",
     flags: int = 0,
     default: Any = ...,
 ) -> Any:
-    """re.search + понятная ошибка, если не нашли.
+    """re.search plus a readable error when nothing matched.
 
-    Если передан ``default``, вместо исключения вернётся он.
+    When ``default`` is given it is returned instead of raising.
     """
     match = re.search(pattern, text, flags) if isinstance(pattern, str) else pattern.search(text)
     if match is None:
         if default is not ...:
             return default
         raise ExtractionError(
-            f"Не удалось найти {what} — скорее всего, плеер изменил разметку страницы."
+            f"Could not find {what} — the player has most likely changed its markup."
         )
     return match.group(group)
 
 
 def json_from_attribute(value: str) -> Dict[str, Any]:
-    """Разбирает json, лежащий в html-атрибуте (с &quot; и прочими сущностями)."""
+    """Parses json stored in an html attribute (with &quot; and other entities)."""
     try:
         return json.loads(html.unescape(value))
     except ValueError as exc:
-        raise ExtractionError(f"Не удалось разобрать json из атрибута страницы: {exc}") from exc
+        raise ExtractionError(f"Could not parse the json held in a page attribute: {exc}") from exc
 
 
 _STREAM_INF = re.compile(r"#EXT-X-STREAM-INF:([^\n]+)\n\s*([^\s#][^\n]*)")
 
 
 def parse_master_playlist(content: str, base_url: str) -> List[Dict[str, Any]]:
-    """Разбирает мастер-плейлист HLS на варианты качества.
+    """Splits an HLS master playlist into its quality variants.
 
-    Возвращает список словарей ``{"url", "height", "width", "bandwidth", "codecs"}``,
-    отсортированный по возрастанию качества.
+    Returns a list of ``{"url", "height", "width", "bandwidth", "codecs"}`` dicts,
+    sorted from the lowest quality up.
     """
     variants: List[Dict[str, Any]] = []
     for attrs, uri in _STREAM_INF.findall(content):
@@ -86,7 +86,7 @@ def parse_master_playlist(content: str, base_url: str) -> List[Dict[str, Any]]:
 
 
 def absolute_url(base_url: str, url: str) -> str:
-    """Превращает относительную ссылку в абсолютную относительно base_url."""
+    """Turns a relative link into an absolute one against base_url."""
     if url.startswith("//"):
         scheme = urlparse(base_url).scheme or "https"
         return f"{scheme}:{url}"
@@ -96,20 +96,20 @@ def absolute_url(base_url: str, url: str) -> str:
 
 
 def force_https(url: str) -> str:
-    """``//host/path`` -> ``https://host/path``; остальное не трогает."""
+    """``//host/path`` -> ``https://host/path``; anything else is left alone."""
     if url.startswith("//"):
         return "https:" + url
     return url
 
 
 def query_param(url: str, key: str) -> Optional[str]:
-    """Значение GET-параметра из ссылки (или None)."""
+    """Value of a GET parameter from a url (or None)."""
     values = parse_qs(urlparse(url).query).get(key)
     return values[0] if values else None
 
 
 def url_host(url: str) -> str:
-    """Хост ссылки без ``www.`` и порта, в нижнем регистре."""
+    """Host of a url, lowercased, without ``www.`` and without the port."""
     netloc = urlparse(url if "//" in url else "//" + url).netloc.lower()
     if "@" in netloc:
         netloc = netloc.rsplit("@", 1)[1]
@@ -122,7 +122,7 @@ _ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 def caesar_shift(text: str, shift: int) -> str:
-    """Шифр Цезаря по латинице с сохранением регистра (остальные символы не трогаются)."""
+    """Caesar cipher over the latin alphabet, case preserved (other characters untouched)."""
     out = []
     for char in text:
         upper = char.upper()
@@ -140,33 +140,34 @@ def _b64_padded(value: str) -> bytes:
 
 
 def decode_kodik_url(value: str, *, known_shift: Optional[int] = None) -> Tuple[str, int]:
-    """Расшифровывает ссылку из ответа Kodik.
+    """Decrypts the link Kodik returns.
 
-    Kodik отдаёт ссылку как base64, дополнительно сдвинутый шифром Цезаря.
-    Сдвиг периодически меняется, поэтому он подбирается перебором (26 вариантов),
-    а найденное значение можно переиспользовать через ``known_shift``.
+    Kodik hands out the link as base64 that has additionally been Caesar-shifted.
+    The shift changes from time to time, so it is brute-forced (26 options) and
+    the value that worked can be reused through ``known_shift``.
 
-    :returns: кортеж ``(ссылка, использованный сдвиг)``.
-    :raises DecryptionError: если ни один сдвиг не дал корректной ссылки.
+    :returns: a ``(link, shift used)`` tuple.
+    :raises DecryptionError: when no shift produced a valid link.
     """
     shifts = ([known_shift] if known_shift is not None else []) + list(range(26))
     for shift in shifts:
         try:
             decoded = _b64_padded(caesar_shift(value, shift)).decode("utf-8")
-        except Exception:  # noqa: BLE001 - любой мусор просто означает "не тот сдвиг"
+        except Exception:  # noqa: BLE001 - any garbage simply means "wrong shift"
             continue
         if decoded.startswith("//") or decoded.startswith("http"):
             return decoded, shift
     raise DecryptionError(
-        "Не удалось расшифровать ссылку Kodik — возможно, изменился алгоритм шифрования."
+        "Could not decrypt the Kodik link — the encryption may have changed."
     )
 
 
+# Quality labels on these sites use both the latin "p" and the cyrillic "р".
 _QUALITY_RE = re.compile(r"(\d{3,4})\s*[pр]?", re.IGNORECASE)
 
 
 def quality_from_label(label: str) -> Optional[int]:
-    """Достаёт число качества из подписи вида ``720p`` / ``1080`` / ``hd720``."""
+    """Pulls the quality number out of a label like ``720p`` / ``1080`` / ``hd720``."""
     match = _QUALITY_RE.search(label or "")
     if not match:
         return None
@@ -175,7 +176,7 @@ def quality_from_label(label: str) -> Optional[int]:
 
 
 def to_int(value: Any) -> Optional[int]:
-    """Приводит значение к int, если это возможно (плееры шлют и числа, и строки)."""
+    """Coerces a value to int when possible (players send both numbers and strings)."""
     if isinstance(value, bool) or value is None:
         return None
     if isinstance(value, (int, float)):

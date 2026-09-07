@@ -1,4 +1,4 @@
-"""Тесты командной строки (сеть не используется — extract подменяется)."""
+"""Command-line tests (no network — extract is stubbed out)."""
 
 from __future__ import annotations
 
@@ -37,15 +37,15 @@ def test_list_players(capsys):
     assert cli.main(["--list"]) == 0
     out = capsys.readouterr().out
     assert "aniboom" in out and "kodik" in out and "vk" in out
-    # у плееров с особенностями показывается примечание
-    assert "примечание:" in out and "сайт офлайн" in out
+    # players with quirks get a note printed
+    assert "note:" in out and "site offline" in out
 
 
 def test_default_output(capsys, fake_extract):
     assert cli.main(["https://kodikplayer.com/seria/1/2/720p"]) == 0
     out = capsys.readouterr().out
-    assert "Плеер: kodik" in out
-    assert "Озвучка: AniLibria" in out
+    assert "Player: kodik" in out
+    assert "Translation: AniLibria" in out
     assert "opening 30-110s" in out
     assert "Referer: https://kodikplayer.com/" in out
 

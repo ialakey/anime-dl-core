@@ -1,4 +1,4 @@
-"""Тесты разбора плееров на сохранённых ответах (без сети)."""
+"""Player parsing tests against saved responses (no network)."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def test_aniboom_parses_hls_and_dash(make_client):
     assert result.duration == 2971
     assert result.poster and result.poster.startswith("http")
     assert result.extra["max_quality"] == 1080
-    # заголовки обязательны для скачивания
+    # the headers are mandatory for downloading
     assert result.streams[0].headers["Referer"] == "https://aniboom.one/"
 
 
@@ -58,7 +58,7 @@ def test_aniboom_expands_master_playlist(make_client):
 
 
 def test_aniboom_reports_broken_markup(make_client):
-    client = make_client({"aniboom.one/embed": "<html><body>ничего интересного</body></html>"})
+    client = make_client({"aniboom.one/embed": "<html><body>nothing of interest</body></html>"})
     with pytest.raises(errors.ExtractionError):
         AniboomPlayer(client).extract(ANIBOOM_EMBED)
 
@@ -85,7 +85,7 @@ def test_cvh_playlist_and_streams(make_client):
 
     result = player.extract("https://animego.me/cdn-iframe/51019/AniDub%20Online/1/1")
     assert result.player == "cvh"
-    assert result.qualities  # mp4 разных качеств
+    assert result.qualities  # mp4 in several qualities
     assert result.master().kind is StreamKind.HLS
     assert result.duration == 2966
     assert result.translation == "AniDub Online"
@@ -105,12 +105,12 @@ def test_cvh_studio_matching_is_fuzzy(make_client):
     episodes = player.playlist("51019")
     studios = {episode.studio for episode in episodes}
 
-    # точное имя студии не требуется — достаточно подстроки
+    # the exact studio name is not required — a substring is enough
     partial = next(iter(studios)).split()[0]
     assert CvhPlayer.select(episodes, episode=1, studio=partial) is not None
 
     with pytest.raises(errors.NotFound):
-        CvhPlayer.select(episodes, episode=1, studio="Такой озвучки нет")
+        CvhPlayer.select(episodes, episode=1, studio="no such dub")
 
 
 def test_cvh_missing_episode(make_client):
@@ -137,7 +137,7 @@ def test_kodik_full_flow(make_client):
 
     assert result.player == "kodik"
     assert result.qualities == [360, 480, 720]
-    # ссылки расшифрованы
+    # the links were decrypted
     for stream in result.streams:
         assert stream.url.startswith("https://")
     assert result.best(kind="mp4").url.endswith("720.mp4")
@@ -150,7 +150,7 @@ def test_kodik_full_flow(make_client):
 
 
 def test_kodik_sends_decoded_ref(make_client):
-    """Пустой ref ломает ручку /ftor (сервер отвечает 500) — проверяем, что он заполнен."""
+    """An empty ref breaks the /ftor endpoint (the server answers 500) — check it is filled in."""
     client = _kodik_client(make_client)
     KodikPlayer(client).extract(KODIK_EMBED)
 
@@ -219,7 +219,7 @@ def test_sibnet_resolves_redirect(make_client):
 
 
 def test_sibnet_no_video(make_client):
-    client = make_client({"sibnet.ru/shell.php": "<html>Видео удалено</html>"})
+    client = make_client({"sibnet.ru/shell.php": "<html>the video was removed</html>"})
     with pytest.raises(errors.NoStreamsFound):
         SibnetPlayer(client).extract(SIBNET_EMBED)
 
@@ -264,7 +264,7 @@ def _vk_client(make_client) -> FakeClient:
 
 
 def test_vk_parses_prefetch_cache(make_client):
-    """Актуальный формат страницы: apiPrefetchCache -> video.get -> files."""
+    """The current page format: apiPrefetchCache -> video.get -> files."""
     client = _vk_client(make_client)
     result = VkPlayer(client).extract(VK_EMBED, resolve_qualities=False)
 
@@ -284,12 +284,12 @@ def test_vk_expands_master_playlist(make_client):
     result = VkPlayer(client).extract(VK_EMBED, resolve_qualities=True)
 
     hls_qualities = [stream.quality for stream in result.filter("hls") if stream.quality]
-    assert hls_qualities  # мастер развернулся в отдельные качества
+    assert hls_qualities  # the master expanded into separate qualities
     assert max(hls_qualities) >= 480
 
 
 def test_vk_supports_legacy_player_params(make_client):
-    """Старый формат (var playerParams) ещё встречается на зеркалах."""
+    """The old format (var playerParams) still shows up on mirrors."""
     params = {
         "params": [
             {
@@ -359,7 +359,7 @@ def test_sovetromantica_dubbed(make_client):
 
 
 def test_sovetromantica_skip_segments(make_client):
-    """skips: start..end — окно кнопки, skip_to — куда перематывает."""
+    """skips: start..end is the button window, skip_to is where it jumps."""
     client = make_client({"/embed/": fixture("sovetromantica_dubbed.html")})
     result = SovetRomanticaPlayer(client).extract(SR_DUBBED)
 
@@ -380,7 +380,7 @@ def test_sovetromantica_subtitles_without_skips(make_client):
 
 
 def test_sovetromantica_custom_domain(make_client):
-    """С base_url плеер принимает зеркало/архив и ходит на указанный домен."""
+    """With base_url the player accepts a mirror/archive and calls the given domain."""
     client = make_client({"/embed/": fixture("sovetromantica_dubbed.html")})
     player = SovetRomanticaPlayer(client, base_url="https://web.archive.org")
     result = player.extract("https://web.archive.org/web/2024id_/https://sovetromantica.com/embed/episode_1073_1-dubbed")
@@ -391,11 +391,11 @@ def test_sovetromantica_custom_domain(make_client):
 
 
 def test_sovetromantica_explains_dead_domain(make_client):
-    """Домен сейчас отдаёт посторонний сайт — ошибка должна это объяснять."""
-    client = make_client({"/embed/": "<html><body>Интернет-магазин</body></html>"})
+    """The domain now serves an unrelated site — the error has to say so."""
+    client = make_client({"/embed/": "<html><body>An online shop</body></html>"})
     with pytest.raises(errors.NoStreamsFound) as info:
         SovetRomanticaPlayer(client).extract(SR_DUBBED)
-    assert "другому владельцу" in str(info.value)
+    assert "belongs to someone else" in str(info.value)
 
 
 # -- Animedia (aser.pro) ------------------------------------------------
@@ -436,7 +436,7 @@ def test_animedia_accepts_plain_id(make_client):
 
 
 def test_animedia_multiquality_playerjs(make_client):
-    """Playerjs умеет отдавать несколько качеств одной строкой."""
+    """Playerjs can serve several qualities on one line."""
     page = (
         '<script>var player = new Playerjs({id:"v", '
         'file:"[720]https://cdn.example/720.mp4,[480]https://cdn.example/480.mp4"});</script>'
@@ -449,7 +449,7 @@ def test_animedia_multiquality_playerjs(make_client):
 
 
 def test_animedia_json_playlist(make_client):
-    """И json-плейлист со списком серий."""
+    """And a json playlist listing the episodes."""
     page = (
         '<script>new Playerjs({file:\'[{"title":"1","file":"https://cdn.example/1.m3u8"},'
         '{"title":"2","file":"https://cdn.example/2.m3u8"}]\'});</script>'
@@ -462,6 +462,6 @@ def test_animedia_json_playlist(make_client):
 
 
 def test_animedia_without_player(make_client):
-    client = make_client({"aser.pro/vod/": "<html><body>Видео удалено</body></html>"})
+    client = make_client({"aser.pro/vod/": "<html><body>the video was removed</body></html>"})
     with pytest.raises(errors.NoStreamsFound):
         AnimediaPlayer(client).extract(ANIMEDIA_VOD)

@@ -1,13 +1,13 @@
-"""Плеер VK Video (vk.com / vkvideo.ru / vk.ru).
+"""The VK Video player (vk.com / vkvideo.ru / vk.ru).
 
-Как устроен (актуально на сентябрь 2026): страница ``video_ext.php`` кладёт в
-``window.cur`` объект ``apiPrefetchCache`` — предзагруженные ответы внутреннего
-API. Нужный ответ — метод ``video.get``: в нём есть ``files`` со ссылками
-(``mp4_144`` … ``mp4_2160``, ``hls_ondemand``, ``dash_ondemand``), название,
-длительность и обложка.
+How it works (as of September 2026): the ``video_ext.php`` page puts an
+``apiPrefetchCache`` object into ``window.cur`` — prefetched responses of the
+internal API. The one we need is the ``video.get`` method: it carries ``files``
+with the links (``mp4_144`` … ``mp4_2160``, ``hls_ondemand``, ``dash_ondemand``),
+the title, the duration and the cover.
 
-Старый формат (``var playerParams = {...}`` с ключами ``url720``) тоже
-поддерживается — он ещё встречается на части зеркал и мобильных страниц.
+The old format (``var playerParams = {...}`` with ``url720`` keys) is supported
+as well — it still shows up on some mirrors and mobile pages.
 """
 
 from __future__ import annotations
@@ -33,9 +33,9 @@ _VIDEO_ID = re.compile(r"(?:video)?(-?\d+)_(\d+)(?:_([0-9a-f]+))?", re.IGNORECAS
 
 
 class VkPlayer(BasePlayer):
-    """Плеер VK Video.
+    """The VK Video player.
 
-    Принимает и ссылку на embed, и обычную ссылку на видео, и просто пару
+    Accepts an embed url, an ordinary video url, or just the
     ``owner_id_video_id``::
 
         with VkPlayer() as player:
@@ -46,10 +46,10 @@ class VkPlayer(BasePlayer):
             print(result.title, result.qualities)
             print(result.best(kind="mp4").url)
 
-    Часть видео (приватные, «только для друзей», удалённые) анонимно недоступна —
-    тогда бросается :class:`~anime_dl_core.errors.ContentBlocked`. Для видео,
-    закрытых по ссылке, нужен параметр ``hash`` из кода вставки — передайте его
-    в ссылке или через :meth:`embed_url`.
+    Some videos (private, friends-only, deleted) cannot be reached anonymously —
+    those raise :class:`~anime_dl_core.errors.ContentBlocked`. Link-only videos
+    need the ``hash`` parameter from the embed code — pass it in the url or
+    through :meth:`embed_url`.
     """
 
     name = "vk"
@@ -61,7 +61,7 @@ class VkPlayer(BasePlayer):
     embed_base = "https://vk.com/video_ext.php"
     playback_headers = {"Referer": "https://vk.com/", "Origin": "https://vk.com"}
 
-    # -- сборка ссылок ---------------------------------------------------
+    # -- building urls ----------------------------------------------------
     @classmethod
     def embed_url(
         cls,
@@ -71,13 +71,13 @@ class VkPlayer(BasePlayer):
         access_key: Optional[str] = None,
         hd: int = 2,
     ) -> str:
-        """Ссылка на embed по ``oid``/``id`` (и ``hash``, если видео по ссылке)."""
+        """Embed url from ``oid``/``id`` (plus ``hash`` for a link-only video)."""
         url = f"{cls.embed_base}?oid={owner_id}&id={video_id}&hd={hd}"
         return url + (f"&hash={access_key}" if access_key else "")
 
     @staticmethod
     def video_ids(url: str) -> Tuple[str, str, Optional[str]]:
-        """``(owner_id, video_id, access_key)`` из любой формы ссылки VK."""
+        """``(owner_id, video_id, access_key)`` from any shape of VK url."""
         url = str(url).strip()
         if "video_ext.php" in url:
             from ..utils import query_param
@@ -88,12 +88,12 @@ class VkPlayer(BasePlayer):
         match = _VIDEO_ID.search(url)
         if not match:
             raise ExtractionError(
-                f"Не удалось понять ссылку VK: {url!r}. Ожидалось video_ext.php?oid=&id=, "
-                "ссылка вида /video-123_456 или строка '-123_456'."
+                f"Could not make sense of the VK url: {url!r}. Expected video_ext.php?oid=&id=, "
+                "a /video-123_456 url, or a '-123_456' string."
             )
         return match.group(1), match.group(2), match.group(3)
 
-    # -- основной интерфейс ----------------------------------------------
+    # -- main interface -----------------------------------------------------
     def extract(
         self,
         url: str,
@@ -102,12 +102,12 @@ class VkPlayer(BasePlayer):
         resolve_qualities: bool = True,
         **_: Any,
     ) -> PlayerResult:
-        """Возвращает mp4/HLS/DASH ссылки видео VK.
+        """Returns the mp4/HLS/DASH links of a VK video.
 
-        :param url: embed, обычная ссылка на видео или ``owner_id_video_id``.
-        :param referer: Referer запроса (по умолчанию ``https://vk.com/``).
-        :param resolve_qualities: развернуть мастер-плейлист HLS в отдельные
-            качества (один дополнительный запрос).
+        :param url: an embed url, an ordinary video url, or ``owner_id_video_id``.
+        :param referer: Referer for the request (``https://vk.com/`` by default).
+        :param resolve_qualities: expand the HLS master playlist into separate
+            qualities (costs one extra request).
         """
         embed = self._normalize(url)
         page = self.client.get(embed, headers={"Referer": referer or "https://vk.com/"})
@@ -139,7 +139,7 @@ class VkPlayer(BasePlayer):
                     result.streams.extend(self._variant_streams(content.text, master))
         return result
 
-    # -- внутреннее -------------------------------------------------------
+    # -- internals ---------------------------------------------------------
     def _normalize(self, url: str) -> str:
         url = str(url).strip()
         if url.startswith("//"):
@@ -164,10 +164,10 @@ class VkPlayer(BasePlayer):
             )
         return streams
 
-    # -- разбор страницы ---------------------------------------------------
+    # -- page parsing --------------------------------------------------------
     @staticmethod
     def _parse_prefetch(text: str) -> Optional[Dict[str, Any]]:
-        """Ищет ответ метода ``video.get`` в ``apiPrefetchCache``."""
+        """Finds the ``video.get`` response inside ``apiPrefetchCache``."""
         index = text.find(_PREFETCH_KEY)
         if index < 0:
             return None
@@ -188,7 +188,7 @@ class VkPlayer(BasePlayer):
 
     @staticmethod
     def _parse_player_params(text: str) -> Optional[Dict[str, Any]]:
-        """Старый формат страницы: ``var playerParams = {...}``."""
+        """The old page format: ``var playerParams = {...}``."""
         raw = _PLAYER_PARAMS.search(text)
         if not raw:
             return None
@@ -200,7 +200,7 @@ class VkPlayer(BasePlayer):
         source = source[0] if isinstance(source, list) and source else params
         if not isinstance(source, dict):
             return None
-        # приводим к виду нового формата
+        # normalise it into the shape of the new format
         files = {key: value for key, value in source.items() if isinstance(value, str)}
         return {
             "files": files,
@@ -217,9 +217,9 @@ class VkPlayer(BasePlayer):
         item = self._parse_prefetch(text) or self._parse_player_params(text)
         if item is None:
             raise ContentBlocked(
-                f"VK не отдал данные видео для {url}. Обычно это значит, что видео приватное, "
-                "удалено, доступно только по ссылке (нужен параметр hash из кода вставки) "
-                "или закрыто в вашем регионе."
+                f"VK served no video data for {url}. That usually means the video is private, "
+                "deleted, link-only (it needs the hash parameter from the embed code), "
+                "or blocked in your region."
             )
 
         files = item.get("files") or {}
@@ -244,8 +244,8 @@ class VkPlayer(BasePlayer):
 
         if not streams:
             raise NoStreamsFound(
-                f"VK вернул описание видео, но без ссылок на файлы: {url}. "
-                f"Доступные ключи: {sorted(files)}"
+                f"VK returned a video description but no file links: {url}. "
+                f"Keys present: {sorted(files)}"
             )
 
         images = [image for image in (item.get("image") or []) if image.get("url")]

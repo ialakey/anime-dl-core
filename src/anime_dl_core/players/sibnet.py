@@ -1,9 +1,9 @@
-"""Плеер Sibnet (video.sibnet.ru).
+"""The Sibnet player (video.sibnet.ru).
 
-Как устроен: на странице ``shell.php?videoid=<id>`` в js-коде плеера лежит
-относительная ссылка на mp4 (``player.src([{src: "/v/<hash>/<id>.mp4"}])``).
-Файл отдаётся только с заголовком ``Referer: https://video.sibnet.ru/``,
-а сама ссылка редиректит на подписанный адрес CDN.
+How it works: the ``shell.php?videoid=<id>`` page carries a relative mp4 link in
+the player js (``player.src([{src: "/v/<hash>/<id>.mp4"}])``).
+The file is only served with a ``Referer: https://video.sibnet.ru/`` header, and
+the link itself redirects to a signed CDN address.
 """
 
 from __future__ import annotations
@@ -26,14 +26,14 @@ _ID_RE = re.compile(r"(?:videoid=|/video)(\d+)", re.IGNORECASE)
 
 
 class SibnetPlayer(BasePlayer):
-    """Плеер Sibnet.
+    """The Sibnet player.
 
-    Пример::
+    Example::
 
         with SibnetPlayer() as player:
             result = player.extract("https://video.sibnet.ru/shell.php?videoid=2589828")
             stream = result.best()
-            print(stream.url, stream.headers)   # Referer обязателен!
+            print(stream.url, stream.headers)   # the Referer is mandatory!
     """
 
     name = "sibnet"
@@ -45,21 +45,21 @@ class SibnetPlayer(BasePlayer):
 
     @classmethod
     def embed_url(cls, video_id: Any) -> str:
-        """Ссылка на плеер по числовому id видео."""
+        """Player url for a numeric video id."""
         return f"{cls.base_url}/shell.php?videoid={video_id}"
 
     @staticmethod
     def video_id(url: str) -> Optional[str]:
-        """Числовой id видео из ссылки."""
-        return search(_ID_RE, str(url), what="id видео Sibnet", default=None)
+        """The numeric video id taken from a url."""
+        return search(_ID_RE, str(url), what="the Sibnet video id", default=None)
 
     def extract(self, url: str, *, resolve: bool = False, **_: Any) -> PlayerResult:
-        """Возвращает прямую ссылку на mp4.
+        """Returns the direct mp4 link.
 
-        :param url: ссылка на плеер или просто числовой id видео.
-        :param resolve: заранее пройти по редиректу и вернуть подписанный адрес CDN.
-            Такая ссылка живёт недолго и привязана к IP, поэтому по умолчанию
-            возвращается стабильный адрес ``video.sibnet.ru/v/...``.
+        :param url: a player url, or just the numeric video id.
+        :param resolve: follow the redirect up front and return the signed CDN address.
+            That link is short-lived and bound to your IP, so by default the stable
+            ``video.sibnet.ru/v/...`` address is returned instead.
         """
         url = self._normalize(url)
         page = self.client.get(url, headers={"Referer": self.base_url + "/"})
@@ -80,7 +80,7 @@ class SibnetPlayer(BasePlayer):
                 result.streams[index] = _with_url(stream, direct)
         return result
 
-    # -- внутреннее -------------------------------------------------------
+    # -- internals ---------------------------------------------------------
     def _normalize(self, url: str) -> str:
         url = str(url).strip()
         if url.isdigit():
@@ -90,13 +90,13 @@ class SibnetPlayer(BasePlayer):
         return self.ensure_matches(url)
 
     def _build_result(self, text: str, url: str) -> PlayerResult:
-        src = search(_SRC_RE, text, what="ссылку на файл в плеере Sibnet", default=None)
+        src = search(_SRC_RE, text, what="the file link in the Sibnet player", default=None)
         if not src:
-            src = search(_FALLBACK_SRC_RE, text, what="ссылку на файл в плеере Sibnet", default=None)
+            src = search(_FALLBACK_SRC_RE, text, what="the file link in the Sibnet player", default=None)
         if not src:
             raise NoStreamsFound(
-                f"На странице Sibnet не найдено ссылки на видео: {url}. "
-                "Видео могло быть удалено или заблокировано."
+                f"No video link was found on the Sibnet page: {url}. "
+                "The video may have been removed or blocked."
             )
 
         headers: Dict[str, str] = dict(self.playback_headers)
@@ -109,8 +109,8 @@ class SibnetPlayer(BasePlayer):
             player=self.name,
             source_url=url,
             streams=streams,
-            title=search(_TITLE_RE, text, what="название", default=None),
-            poster=search(_POSTER_RE, text, what="постер", default=None),
+            title=search(_TITLE_RE, text, what="the title", default=None),
+            poster=search(_POSTER_RE, text, what="the poster", default=None),
             extra={"video_id": self.video_id(url)},
         )
 

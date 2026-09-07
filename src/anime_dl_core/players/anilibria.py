@@ -1,8 +1,8 @@
-"""Плеер AniLibria / AniLiberty (anilibria.top).
+"""The AniLibria / AniLiberty player (anilibria.top).
 
-Строго говоря, это не embed-плеер, а открытое API: по алиасу релиза отдаётся
-список серий с готовыми ссылками на HLS в 480/720/1080 и таймкодами опенинга
-и эндинга. Токен не нужен.
+Strictly speaking this is not an embed player but an open API: given a release
+alias it returns the list of episodes with ready HLS links in 480/720/1080 and
+the opening/ending timecodes. No token needed.
 """
 
 from __future__ import annotations
@@ -23,14 +23,14 @@ _HLS_KEY_RE = re.compile(r"^hls_(\d{3,4})$")
 
 
 class AnilibriaPlayer(BasePlayer):
-    """Плеер AniLibria (aniliberty).
+    """The AniLibria (aniliberty) player.
 
-    Пример::
+    Example::
 
         with AnilibriaPlayer() as player:
             result = player.extract("bleach", episode=1)
             print(result.title, result.qualities)
-            print(result.skip_segments)     # опенинг/эндинг
+            print(result.skip_segments)     # opening/ending
     """
 
     name = "anilibria"
@@ -41,14 +41,14 @@ class AnilibriaPlayer(BasePlayer):
     site_base = "https://anilibria.top"
 
     def __init__(self, *args: Any, api_base: Optional[str] = None, **kwargs: Any) -> None:
-        """:param api_base: адрес API, если основной домен недоступен (зеркало)."""
+        """:param api_base: API address, for when the main domain is unreachable (a mirror)."""
         super().__init__(*args, **kwargs)
         if api_base:
             self.api_base = api_base.rstrip("/")
 
     # -- API ---------------------------------------------------------------
     def release(self, alias: str) -> Dict[str, Any]:
-        """Полные данные релиза по алиасу или id."""
+        """Full release data by alias or id."""
         resp = self.client.get(f"{self.api_base}/anime/releases/{alias}", headers={"Accept": "application/json"})
         return self._check_release(resp.raise_for_status().json(), alias)
 
@@ -59,11 +59,11 @@ class AnilibriaPlayer(BasePlayer):
         return self._check_release(resp.raise_for_status().json(), alias)
 
     def episodes(self, alias: str) -> List[Dict[str, Any]]:
-        """Список серий релиза (как их отдаёт API)."""
+        """The release's episode list, exactly as the API returns it."""
         return self.release(alias).get("episodes") or []
 
     def search(self, query: str, *, limit: int = 10) -> List[Dict[str, Any]]:
-        """Поиск релизов по названию (удобно, чтобы узнать алиас)."""
+        """Search releases by name (handy for finding an alias)."""
         resp = self.client.get(
             f"{self.api_base}/app/search/releases",
             params={"query": query, "limit": limit},
@@ -73,13 +73,13 @@ class AnilibriaPlayer(BasePlayer):
         items = data.get("data") if isinstance(data, dict) else data
         return list(items or [])[:limit]
 
-    # -- основной интерфейс -------------------------------------------------
+    # -- main interface -----------------------------------------------------
     def extract(self, url: str, *, episode: Optional[int] = None, **_: Any) -> PlayerResult:
-        """Ссылки на серию.
+        """Links for one episode.
 
-        :param url: ссылка вида ``https://anilibria.top/anime/releases/release/<alias>/episodes/<n>``,
-            алиас релиза (``"bleach"``) или строка ``"bleach/3"``.
-        :param episode: номер серии, если он не задан в ссылке (по умолчанию первая).
+        :param url: a ``https://anilibria.top/anime/releases/release/<alias>/episodes/<n>`` url,
+            a release alias (``"bleach"``), or a ``"bleach/3"`` string.
+        :param episode: episode number, when the url does not carry one (first by default).
         """
         alias, episode_number = self._parse(url, episode)
         release = self.release(alias)
@@ -90,14 +90,14 @@ class AnilibriaPlayer(BasePlayer):
         release = await self.arelease(alias)
         return self._build_result(release, alias, episode_number, str(url))
 
-    # -- внутреннее ---------------------------------------------------------
+    # -- internals ----------------------------------------------------------
     @staticmethod
     def _parse(url: str, episode: Optional[int]) -> "tuple[str, Optional[int]]":
         url = str(url).strip()
         if url.startswith("http"):
             alias_match = _RELEASE_RE.search(url)
             if not alias_match:
-                raise NotFound(f"В ссылке {url!r} нет алиаса релиза AniLibria")
+                raise NotFound(f"The url {url!r} carries no AniLibria release alias")
             alias = alias_match.group(1)
             episode_match = _EPISODE_RE.search(url)
             if episode is None and episode_match:
@@ -113,24 +113,24 @@ class AnilibriaPlayer(BasePlayer):
     @staticmethod
     def _check_release(data: Any, alias: str) -> Dict[str, Any]:
         if not isinstance(data, dict) or not data.get("id"):
-            raise NotFound(f"Релиз {alias!r} не найден в AniLibria")
+            raise NotFound(f"Release {alias!r} was not found on AniLibria")
         if data.get("is_blocked_by_geo"):
             from ..errors import ContentBlocked
 
-            raise ContentBlocked(f"Релиз {alias!r} заблокирован в вашем регионе (нужен прокси)")
+            raise ContentBlocked(f"Release {alias!r} is blocked in your region (use a proxy)")
         return data
 
     @staticmethod
     def _select_episode(episodes: Sequence[Dict[str, Any]], number: Optional[int]) -> Dict[str, Any]:
         if not episodes:
-            raise NotFound("У релиза нет ни одной серии")
+            raise NotFound("The release has no episodes at all")
         if number is None:
             return episodes[0]
         for item in episodes:
             if int(item.get("ordinal") or 0) == number:
                 return item
         available = [int(item.get("ordinal") or 0) for item in episodes]
-        raise NotFound(f"Серия {number} не найдена. Доступные: {available[:1]}..{available[-1:]}")
+        raise NotFound(f"Episode {number} was not found. Available: {available[:1]}..{available[-1:]}")
 
     def _build_result(
         self, release: Dict[str, Any], alias: str, number: Optional[int], source_url: str
@@ -147,7 +147,7 @@ class AnilibriaPlayer(BasePlayer):
         streams.sort(key=lambda s: s.quality or 0)
 
         if not streams:
-            raise NoStreamsFound(f"AniLibria не отдала ссылок для серии {number} релиза {alias!r}")
+            raise NoStreamsFound(f"AniLibria returned no links for episode {number} of release {alias!r}")
 
         skip: List[SkipSegment] = []
         for kind in ("opening", "ending"):
@@ -160,7 +160,7 @@ class AnilibriaPlayer(BasePlayer):
         episode_name = episode.get("name")
         title = names.get("main") or names.get("english") or alias
         if episode.get("ordinal"):
-            title = f"{title} — серия {int(episode['ordinal'])}"
+            title = f"{title} — episode {int(episode['ordinal'])}"
         if episode_name:
             title = f"{title}: {episode_name}"
 

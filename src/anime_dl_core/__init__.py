@@ -1,17 +1,17 @@
-"""anime-dl-core — получение прямых ссылок на видео из аниме-плееров.
+"""anime-dl-core — direct video links from anime players.
 
-Быстрый старт::
+Quick start::
 
     import anime_dl_core
 
     result = anime_dl_core.extract("https://aniboom.one/embed/9G1MJ6NMV8z?episode=1")
     stream = result.best(kind="hls")
     print(stream.url)
-    print(stream.headers)          # эти заголовки обязательны при скачивании
+    print(stream.headers)          # these headers are required when downloading
     print(stream.ffmpeg_command("episode.mp4"))
 
-Поддерживаются: Aniboom, CVH (CdnVideoHub), Kodik, Sibnet, AniLibria,
-VK Video и SovetRomantica. Полная документация — в README.md.
+Supported: Aniboom, CVH (CdnVideoHub), Kodik, Sibnet, AniLibria,
+VK Video and SovetRomantica. Full documentation lives in README.md.
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ __version__ = "0.4.1"
 
 __all__ = [
     "__version__",
-    # фасад
+    # facade
     "extract",
     "extract_async",
     "get_player",
@@ -67,12 +67,12 @@ __all__ = [
     "describe_players",
     "register",
     "PLAYERS",
-    # модели
+    # models
     "PlayerResult",
     "Stream",
     "StreamKind",
     "SkipSegment",
-    # плееры
+    # players
     "BasePlayer",
     "AniboomPlayer",
     "AnimediaPlayer",
@@ -88,7 +88,7 @@ __all__ = [
     "AsyncHttpClient",
     "Response",
     "DEFAULT_USER_AGENT",
-    # ошибки
+    # errors
     "AnimeDlCoreError",
     "UnsupportedUrl",
     "NetworkError",

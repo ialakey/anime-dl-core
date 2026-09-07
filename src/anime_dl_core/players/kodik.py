@@ -1,15 +1,15 @@
-"""Плеер Kodik (kodikplayer.com, kodik.info).
+"""The Kodik player (kodikplayer.com, kodik.info).
 
-Как устроен:
+How it works:
 
-1. Страница embed отдаёт ``urlParams`` — json с подписями (``d_sign``, ``pd_sign``,
-   ``ref_sign``), привязанными к домену и времени, и ``vInfo`` с id/hash/типом видео.
-2. В скрипте плеера лежит адрес ручки (``url:atob("L2Z0b3I=")`` → ``/ftor``).
-3. POST на эту ручку с подписями возвращает ссылки по качествам, зашифрованные
-   base64 со сдвигом (шифр Цезаря) — сдвиг подбирается перебором.
+1. The embed page serves ``urlParams`` — json with signatures (``d_sign``, ``pd_sign``,
+   ``ref_sign``) bound to a domain and a moment in time, plus ``vInfo`` with the video id/hash/type.
+2. The player script holds the endpoint address (``url:atob("L2Z0b3I=")`` → ``/ftor``).
+3. POSTing the signatures to that endpoint returns per-quality links, encrypted as
+   base64 with a Caesar shift — the shift is brute-forced.
 
-Важно: подписи одноразовые и живут недолго, поэтому страницу и POST нужно делать
-подряд, а полученные ссылки использовать сразу (они тоже с ограниченным сроком).
+Important: the signatures are single-use and short-lived, so the page fetch and the
+POST have to happen back to back, and the links must be used right away (they expire too).
 """
 
 from __future__ import annotations
@@ -39,17 +39,17 @@ _MANIFEST_SUFFIX = ":hls:manifest.m3u8"
 
 
 class KodikPlayer(BasePlayer):
-    """Плеер Kodik.
+    """The Kodik player.
 
-    Для получения ссылок на видео токен API Kodik **не нужен** — достаточно
-    ссылки на embed, которую отдаёт сайт-агрегатор::
+    Getting video links needs **no** Kodik API token — the embed url the aggregator
+    site hands out is enough::
 
         with KodikPlayer() as player:
             result = player.extract(
                 "https://kodikplayer.com/seria/1304528/932d5da818729ec5ccc9be7968ee3717/720p"
             )
             print(result.qualities)          # [360, 480, 720]
-            print(result.best(kind="mp4"))   # прямой mp4 максимального качества
+            print(result.best(kind="mp4"))   # the highest-quality direct mp4
     """
 
     name = "kodik"
@@ -64,7 +64,7 @@ class KodikPlayer(BasePlayer):
         self._post_path_cache: Dict[str, str] = {}
         self._shift: Optional[int] = None
 
-    # -- публичный интерфейс --------------------------------------------
+    # -- public interface ------------------------------------------------
     def extract(
         self,
         url: str,
@@ -75,13 +75,13 @@ class KodikPlayer(BasePlayer):
         include_mp4: bool = True,
         **_: Any,
     ) -> PlayerResult:
-        """Разбирает embed Kodik и возвращает ссылки по качествам.
+        """Parses a Kodik embed and returns the per-quality links.
 
-        :param url: ссылка на embed (``https://kodikplayer.com/seria/<id>/<hash>/720p``).
-        :param season: номер сезона для ссылок вида ``/serial/...`` (необязательно).
-        :param episode: номер эпизода для ссылок вида ``/serial/...`` (необязательно).
-        :param referer: сайт, с которого якобы открыт плеер.
-        :param include_mp4: добавлять прямые mp4-ссылки (выводятся из hls-манифеста).
+        :param url: embed url (``https://kodikplayer.com/seria/<id>/<hash>/720p``).
+        :param season: season number for ``/serial/...`` urls (optional).
+        :param episode: episode number for ``/serial/...`` urls (optional).
+        :param referer: the site the player is supposedly opened from.
+        :param include_mp4: also add direct mp4 links (derived from the hls manifest).
         """
         url = self._normalize(url, season=season, episode=episode)
         page = self.client.get(url, headers={"Referer": referer or self.default_referer})
@@ -131,7 +131,7 @@ class KodikPlayer(BasePlayer):
         )
         return self._build_result(answer, url, info, include_mp4)
 
-    # -- разбор страницы -------------------------------------------------
+    # -- page parsing ------------------------------------------------------
     def _normalize(self, url: str, *, season: Optional[int], episode: Optional[int]) -> str:
         url = force_https(str(url).strip())
         if not url.startswith("http"):
@@ -149,13 +149,13 @@ class KodikPlayer(BasePlayer):
 
     @staticmethod
     def _parse_page(text: str, url: str) -> Dict[str, Any]:
-        raw_params = search(_URL_PARAMS, text, what="urlParams на странице Kodik", default=None)
+        raw_params = search(_URL_PARAMS, text, what="urlParams on the Kodik page", default=None)
         if raw_params is None:
-            raw_params = search(_URL_PARAMS_DQ, text, what="urlParams на странице Kodik")
+            raw_params = search(_URL_PARAMS_DQ, text, what="urlParams on the Kodik page")
         try:
             url_params = json.loads(raw_params)
         except ValueError as exc:
-            raise ExtractionError(f"urlParams Kodik не разбирается как json: {exc}") from exc
+            raise ExtractionError(f"Kodik urlParams do not parse as json: {exc}") from exc
 
         video: Dict[str, str] = {}
         for key, value in _V_INFO.findall(text):
@@ -163,37 +163,37 @@ class KodikPlayer(BasePlayer):
         missing = {"type", "hash", "id"} - set(video)
         if missing:
             raise ExtractionError(
-                f"На странице Kodik нет данных о видео ({', '.join(sorted(missing))}): {url}"
+                f"The Kodik page carries no video data ({', '.join(sorted(missing))}): {url}"
             )
 
-        script_path = search(_PLAYER_SCRIPT, text, what="скрипт плеера Kodik", default=None) or search(
-            _ANY_SCRIPT, text, what="скрипт плеера Kodik"
+        script_path = search(_PLAYER_SCRIPT, text, what="the Kodik player script", default=None) or search(
+            _ANY_SCRIPT, text, what="the Kodik player script"
         )
 
         return {
             "url_params": url_params,
             "video": video,
             "script_path": script_path,
-            "skip": _parse_skip_button(search(_SKIP_BUTTON, text, what="таймкоды", default="")),
-            "translation": search(_TRANSLATION_TITLE, text, what="озвучка", default=None),
-            "translation_id": search(_TRANSLATION_ID, text, what="id озвучки", default=None),
+            "skip": _parse_skip_button(search(_SKIP_BUTTON, text, what="the timecodes", default="")),
+            "translation": search(_TRANSLATION_TITLE, text, what="the dub", default=None),
+            "translation_id": search(_TRANSLATION_ID, text, what="the dub id", default=None),
         }
 
     @staticmethod
     def _parse_post_path(script: str, script_url: str) -> str:
-        encoded = search(_AJAX_URL, script, what="адрес ручки плеера Kodik", default=None)
+        encoded = search(_AJAX_URL, script, what="the Kodik endpoint address", default=None)
         if encoded is None:
             raise ExtractionError(
-                f"В скрипте плеера Kodik не найден вызов atob() с адресом ручки: {script_url}"
+                f"The Kodik player script has no atob() call carrying the endpoint address: {script_url}"
             )
         import base64
 
         try:
             path = base64.b64decode(encoded).decode()
         except Exception as exc:  # noqa: BLE001
-            raise ExtractionError(f"Адрес ручки Kodik не декодируется из base64: {exc}") from exc
+            raise ExtractionError(f"The Kodik endpoint address does not decode from base64: {exc}") from exc
         if not path.startswith("/"):
-            raise ExtractionError(f"Адрес ручки Kodik выглядит неожиданно: {path!r}")
+            raise ExtractionError(f"The Kodik endpoint address looks unexpected: {path!r}")
         return path
 
     @staticmethod
@@ -202,7 +202,7 @@ class KodikPlayer(BasePlayer):
         video = info["video"]
         missing = {"d", "d_sign", "pd", "pd_sign", "ref_sign"} - set(params)
         if missing:
-            raise ExtractionError(f"В urlParams Kodik нет полей: {', '.join(sorted(missing))}")
+            raise ExtractionError(f"Kodik urlParams are missing fields: {', '.join(sorted(missing))}")
         return {
             "hash": video["hash"],
             "id": video["id"],
@@ -211,7 +211,7 @@ class KodikPlayer(BasePlayer):
             "d_sign": params["d_sign"],
             "pd": params["pd"],
             "pd_sign": params["pd_sign"],
-            # ref обязателен и должен быть раскодирован — с пустым значением сервер отвечает 500
+            # ref is mandatory and must be decoded — an empty value makes the server answer 500
             "ref": unquote(params.get("ref", "")),
             "ref_sign": params["ref_sign"],
             "bad_user": "true",
@@ -233,22 +233,22 @@ class KodikPlayer(BasePlayer):
         parts = urlparse(base_url)
         return f"{parts.scheme}://{parts.netloc}{path}"
 
-    # -- сборка результата ------------------------------------------------
+    # -- assembling the result ---------------------------------------------
     def _build_result(self, answer: Any, url: str, info: Dict[str, Any], include_mp4: bool) -> PlayerResult:
         if not answer.ok:
             raise ServiceError(
-                f"Kodik ответил кодом {answer.status} на запрос ссылок. "
-                "Обычно это значит, что подписи из urlParams устарели или заблокирован IP.",
+                f"Kodik answered the link request with status {answer.status}. "
+                "That usually means the urlParams signatures went stale or the IP is blocked.",
                 status=answer.status,
                 url=answer.url,
             )
         data = answer.json()
         if isinstance(data, dict) and data.get("error"):
-            raise ServiceError(f"Kodik вернул ошибку: {data['error']}")
+            raise ServiceError(f"Kodik returned an error: {data['error']}")
 
         links = (data or {}).get("links") or {}
         if not links:
-            raise NoStreamsFound(f"Kodik не вернул ссылок для {url}")
+            raise NoStreamsFound(f"Kodik returned no links for {url}")
 
         headers = dict(self.playback_headers)
         headers["User-Agent"] = self._client_options["user_agent"]
@@ -269,15 +269,15 @@ class KodikPlayer(BasePlayer):
                     streams.append(
                         Stream(link[: -len(_MANIFEST_SUFFIX)], StreamKind.MP4, quality, headers, f"{quality}p")
                     )
-                break  # у Kodik в списке всегда один элемент на качество
+                break  # Kodik always lists exactly one entry per quality
 
         if not streams:
-            raise NoStreamsFound(f"Kodik вернул пустой список ссылок для {url}")
+            raise NoStreamsFound(f"Kodik returned an empty list of links for {url}")
 
         if any("/s/m/" in stream.url for stream in streams):
             data.setdefault("warnings", []).append(
-                "Получена прокси-ссылка (/s/m/) — вероятно, ваш IP ограничен Kodik. "
-                "Попробуйте параметр proxy."
+                "Got a proxy link (/s/m/) — Kodik has most likely rate-limited your IP. "
+                "Try the proxy parameter."
             )
 
         return PlayerResult(
@@ -312,7 +312,7 @@ def _as_int(value: Any) -> int:
 
 
 def _parse_skip_button(value: str) -> List[SkipSegment]:
-    """``"0:30-1:50,22:55-24:05"`` -> список сегментов в секундах."""
+    """``"0:30-1:50,22:55-24:05"`` -> a list of segments in seconds."""
     segments: List[SkipSegment] = []
     for index, chunk in enumerate(filter(None, (value or "").split(","))):
         if "-" not in chunk:
@@ -326,7 +326,7 @@ def _parse_skip_button(value: str) -> List[SkipSegment]:
 
 
 def _timecode(value: str) -> Optional[int]:
-    """``"22:55"`` / ``"1:02:03"`` -> секунды."""
+    """``"22:55"`` / ``"1:02:03"`` -> seconds."""
     parts = value.strip().split(":")
     if not all(part.strip().isdigit() for part in parts) or not parts:
         return None

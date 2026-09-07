@@ -1,21 +1,21 @@
-"""Плеер Animedia — ``aser.pro/vod/<id>`` (сайт amd.online, бывший animedia.tv).
+"""The Animedia player — ``aser.pro/vod/<id>`` (the amd.online site, formerly animedia.tv).
 
-Как устроен: страница плеера почти пустая, весь смысл в одной строке::
+How it works: the player page is nearly empty, everything lives on one line::
 
     var player = new Playerjs({
         id: "videoplayer20182",
         file: "https://aser.pro/content/stream/<slug>/<NNN>_<vod_id>/hls/index.m3u8"
     });
 
-``file`` — это либо ссылка на мастер-плейлист HLS, либо запись Playerjs с
-несколькими качествами (``[720]url1,[360]url2``), либо json-плейлист.
-Поддерживаются все три варианта.
+``file`` is either a link to an HLS master playlist, or a Playerjs record with
+several qualities (``[720]url1,[360]url2``), or a json playlist.
+All three are supported.
 
 .. note::
-   Старые embed-ссылки ``online.animedia.tv/embed/<id>/<сезон>/<серия>``
-   (их до сих пор отдают некоторые агрегаторы) не работают: домен отвечает
-   бесконечным редиректом на самого себя. Рабочие ссылки на плеер лежат на
-   странице тайтла amd.online — их удобно доставать помощником
+   The old ``online.animedia.tv/embed/<id>/<season>/<episode>`` embed links
+   (some aggregators still hand them out) do not work: the domain answers with
+   an endless redirect to itself. Working player links sit on the title page at
+   amd.online — the easiest way to get them is the helper
    :class:`anime_dl_core.sources.Animedia`.
 """
 
@@ -34,21 +34,21 @@ __all__ = ["AnimediaPlayer"]
 
 _PLAYERJS_FILE = re.compile(r"""file\s*:\s*(['"])(.*?)\1""", re.DOTALL)
 _VOD_ID = re.compile(r"/vod/(\d+)")
-#: ``.../content/stream/<slug>/<номер>_<vod_id>/hls/index.m3u8``
+#: ``.../content/stream/<slug>/<number>_<vod_id>/hls/index.m3u8``
 _STREAM_PATH = re.compile(r"/content/stream/([^/]+)/(\d+)_(\d+)/", re.IGNORECASE)
-#: запись Playerjs с несколькими качествами: ``[720]https://...,[360]https://...``
+#: a Playerjs record with several qualities: ``[720]https://...,[360]https://...``
 _LABELLED = re.compile(r"\[([^\]]+)\]([^,]+)")
 
 
 class AnimediaPlayer(BasePlayer):
-    """Плеер Animedia (aser.pro).
+    """The Animedia player (aser.pro).
 
-    Пример::
+    Example::
 
         from anime_dl_core import AnimediaPlayer
 
         with AnimediaPlayer() as player:
-            result = player.extract("https://aser.pro/vod/20182")   # можно и просто 20182
+            result = player.extract("https://aser.pro/vod/20182")   # plain 20182 works too
             print(result.qualities)      # [360, 720]
             print(result.best().url)
     """
@@ -57,21 +57,21 @@ class AnimediaPlayer(BasePlayer):
     title = "Animedia (aser.pro)"
     domains = ("aser.pro", "animedia.tv", "amd.online")
     url_patterns = compile_patterns(r"aser\.pro/vod/\d+", r"animedia\.[a-z]+/embed/")
-    note = "старые ссылки online.animedia.tv/embed/... не работают, актуальные — aser.pro/vod/<id>"
+    note = "the old online.animedia.tv/embed/... links no longer work; current ones are aser.pro/vod/<id>"
     base_url = "https://aser.pro"
     site_url = "https://amd.online"
     playback_headers = {"Referer": "https://aser.pro/"}
 
-    # -- публичный интерфейс ------------------------------------------------
+    # -- public interface ---------------------------------------------------
     @classmethod
     def embed_url(cls, vod_id: Any) -> str:
-        """Ссылка на плеер по числовому id."""
+        """Player url for a numeric id."""
         return f"{cls.base_url}/vod/{vod_id}"
 
     @staticmethod
     def vod_id(url: str) -> Optional[str]:
-        """Числовой id плеера из ссылки."""
-        return search(_VOD_ID, str(url), what="id видео Animedia", default=None)
+        """The numeric player id taken from a url."""
+        return search(_VOD_ID, str(url), what="the Animedia video id", default=None)
 
     def extract(
         self,
@@ -81,11 +81,11 @@ class AnimediaPlayer(BasePlayer):
         resolve_qualities: bool = True,
         **_: Any,
     ) -> PlayerResult:
-        """Возвращает потоки серии.
+        """Returns the streams for one episode.
 
-        :param url: ссылка ``https://aser.pro/vod/<id>`` или просто ``<id>``.
-        :param referer: Referer запроса (по умолчанию сайт amd.online).
-        :param resolve_qualities: развернуть мастер-плейлист HLS по качествам.
+        :param url: a ``https://aser.pro/vod/<id>`` url, or just ``<id>``.
+        :param referer: Referer for the request (the amd.online site by default).
+        :param resolve_qualities: expand the HLS master playlist into per-quality streams.
         """
         url = self._normalize(url)
         page = self.client.get(url, headers={"Referer": referer or self.site_url + "/"})
@@ -117,7 +117,7 @@ class AnimediaPlayer(BasePlayer):
                     result.streams.extend(self._variant_streams(content.text, master))
         return result
 
-    # -- внутреннее ---------------------------------------------------------
+    # -- internals ----------------------------------------------------------
     def _normalize(self, url: str) -> str:
         url = str(url).strip()
         if url.isdigit():
@@ -140,18 +140,18 @@ class AnimediaPlayer(BasePlayer):
         ]
 
     def _build_result(self, text: str, url: str) -> PlayerResult:
-        raw = search(_PLAYERJS_FILE, text, group=2, what="параметр file плеера Playerjs", default=None)
+        raw = search(_PLAYERJS_FILE, text, group=2, what="the Playerjs file parameter", default=None)
         if not raw:
             raise NoStreamsFound(
-                f"На странице Animedia не найден параметр file плеера: {url}. "
-                "Проверьте ссылку: рабочий адрес выглядит как https://aser.pro/vod/<id>."
+                f"The Animedia page has no player file parameter: {url}. "
+                "Check the url: a working one looks like https://aser.pro/vod/<id>."
             )
 
         headers: Dict[str, str] = dict(self.playback_headers)
         headers["User-Agent"] = self._client_options["user_agent"]
         streams = _streams_from_playerjs(raw.replace("\\/", "/"), url, headers)
         if not streams:
-            raise NoStreamsFound(f"Playerjs на странице Animedia не отдал ни одной ссылки: {url}")
+            raise NoStreamsFound(f"Playerjs on the Animedia page returned no links at all: {url}")
 
         path = _STREAM_PATH.search(streams[0].url)
         return PlayerResult(
@@ -167,10 +167,10 @@ class AnimediaPlayer(BasePlayer):
 
 
 def _streams_from_playerjs(value: str, base_url: str, headers: Dict[str, str]) -> List[Stream]:
-    """Разбирает значение ``file`` во всех форматах, которые понимает Playerjs."""
+    """Parses a ``file`` value in every format Playerjs understands."""
     value = value.strip()
 
-    # 1. json-плейлист: [{"title": "1 серия", "file": "..."}, ...]
+    # 1. json playlist: [{"title": "1 серия", "file": "..."}, ...]
     if value.startswith("["):
         try:
             items = json.loads(value)
@@ -186,7 +186,7 @@ def _streams_from_playerjs(value: str, base_url: str, headers: Dict[str, str]) -
             if streams:
                 return streams
 
-    # 2. несколько качеств: [720]url1,[360]url2
+    # 2. several qualities: [720]url1,[360]url2
     labelled = _LABELLED.findall(value)
     if labelled:
         streams = []
@@ -196,7 +196,7 @@ def _streams_from_playerjs(value: str, base_url: str, headers: Dict[str, str]) -
         streams.sort(key=lambda stream: stream.quality or 0)
         return streams
 
-    # 3. обычная ссылка
+    # 3. a plain link
     link = absolute_url(base_url, value)
     if not link.startswith("http"):
         return []

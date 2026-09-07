@@ -1,9 +1,9 @@
-"""Как добавить свой плеер, не трогая код библиотеки.
+"""How to add your own player without touching the library code.
 
-Достаточно унаследоваться от BasePlayer, задать домены и реализовать extract().
-После register() ссылка на новый плеер работает через общий anime_dl_core.extract().
+Subclass BasePlayer, declare the domains, implement extract(). After register()
+a url for the new player works through the shared anime_dl_core.extract().
 
-Запуск:
+Run it with:
     python examples/05_custom_player.py
 """
 
@@ -21,7 +21,7 @@ FILE_RE = re.compile(r'file\s*:\s*"([^"]+\.m3u8)"')
 
 @register
 class MyPlayer(BasePlayer):
-    """Плеер вымышленного сайта myplayer.example."""
+    """A player for the made-up site myplayer.example."""
 
     name = "myplayer"
     title = "My Player"
@@ -30,7 +30,7 @@ class MyPlayer(BasePlayer):
 
     def extract(self, url: str, **kwargs: Any) -> PlayerResult:
         page = self.client.get(url, headers={"Referer": "https://myplayer.example/"})
-        playlist = search(FILE_RE, page.raise_for_status().text, what="ссылку на m3u8")
+        playlist = search(FILE_RE, page.raise_for_status().text, what="an m3u8 link")
 
         headers = dict(self.playback_headers)
         headers["User-Agent"] = self._client_options["user_agent"]
@@ -42,11 +42,11 @@ class MyPlayer(BasePlayer):
 
 
 def main() -> None:
-    print("Плееры в реестре:", ap.player_names())
+    print("Players in the registry:", ap.player_names())
     player = ap.get_player_class("https://myplayer.example/embed/1")
-    print("Ссылка ушла в:", player.name)
+    print("The url went to:", player.name)
 
-    # Проверим разбор на подставном ответе, без сети
+    # check the parsing against a stubbed response, no network
     class FakeClient:
         def get(self, url: str, **kwargs: Any):
             from anime_dl_core.http import Response
@@ -57,7 +57,7 @@ def main() -> None:
             pass
 
     result = MyPlayer(FakeClient()).extract("https://myplayer.example/embed/1")
-    print("Результат:", result.best())
+    print("Result:", result.best())
 
 
 if __name__ == "__main__":

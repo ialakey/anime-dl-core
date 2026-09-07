@@ -1,9 +1,9 @@
-"""Помощник для сайта Animedia (amd.online, бывший animedia.tv).
+"""Helper for the Animedia site (amd.online, formerly animedia.tv).
 
-Даёт то, чего не хватает плееру: поиск тайтла, список серий и ссылки на плееры.
-Сам сайт отдаёт две вещи — свой плеер ``aser.pro/vod/<id>`` (разбирает
-:class:`~anime_dl_core.players.animedia.AnimediaPlayer`) и iframe Kodik
-(разбирает :class:`~anime_dl_core.players.kodik.KodikPlayer`).
+Provides what the player alone cannot: title search, the episode list, and player links.
+The site itself serves two things — its own ``aser.pro/vod/<id>`` player (parsed by
+:class:`~anime_dl_core.players.animedia.AnimediaPlayer`) and a Kodik iframe
+(parsed by :class:`~anime_dl_core.players.kodik.KodikPlayer`).
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ _POSTER = re.compile(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', re.
 
 @dataclass(frozen=True)
 class AnimediaItem:
-    """Найденный тайтл на amd.online."""
+    """A title found on amd.online."""
 
     id: str
     title: str
@@ -40,9 +40,9 @@ class AnimediaItem:
 
 
 class Animedia:
-    """Мини-парсер сайта Animedia.
+    """A small parser for the Animedia site.
 
-    Пример::
+    Example::
 
         from anime_dl_core.sources import Animedia
         import anime_dl_core as ap
@@ -50,7 +50,7 @@ class Animedia:
         with Animedia() as site:
             anime = site.search("Боруто")[0]
             episodes = site.episodes(anime.url)          # {1: 'https://aser.pro/vod/1067', ...}
-            result = ap.extract(episodes[1])             # прямые ссылки на видео
+            result = ap.extract(episodes[1])             # direct video links
     """
 
     def __init__(
@@ -62,14 +62,14 @@ class Animedia:
         user_agent: str = DEFAULT_USER_AGENT,
         client: Optional[HttpClient] = None,
     ) -> None:
-        """:param base_url: домен сайта (меняется, когда Animedia переезжает)."""
+        """:param base_url: the site domain (it changes whenever Animedia moves)."""
         self.base_url = base_url.rstrip("/")
         self._client = client or HttpClient(proxy=proxy, timeout=timeout, user_agent=user_agent)
         self._own_client = client is None
 
-    # -- поиск -----------------------------------------------------------
+    # -- search ------------------------------------------------------------
     def search(self, query: str, *, limit: int = 20) -> List[AnimediaItem]:
-        """Поиск тайтла по названию."""
+        """Search for a title by name."""
         resp = self._client.get(
             f"{self.base_url}/index.php",
             params={"do": "search", "subaction": "search", "story": query},
@@ -77,7 +77,7 @@ class Animedia:
         )
         if resp.status in (403, 503):
             raise ServiceError(
-                f"Animedia вернула {resp.status} — возможна защита от ботов.",
+                f"Animedia answered {resp.status} — possibly bot protection.",
                 status=resp.status,
                 url=resp.url,
             )
@@ -93,12 +93,12 @@ class Animedia:
             if len(items) >= limit:
                 break
         if not items:
-            raise NotFound(f"Animedia: по запросу {query!r} ничего не найдено")
+            raise NotFound(f"Animedia: nothing was found for {query!r}")
         return items
 
-    # -- страница тайтла --------------------------------------------------
+    # -- title page ---------------------------------------------------------
     def info(self, page_url: str) -> AnimediaItem:
-        """Название и постер тайтла."""
+        """The title's name and poster."""
         text = self._page(page_url)
         title = _TITLE.search(text)
         poster = _POSTER.search(text)
@@ -110,7 +110,7 @@ class Animedia:
         )
 
     def episodes(self, page_url: str) -> Dict[int, str]:
-        """``{номер серии: ссылка на плеер aser.pro}``."""
+        """``{episode number: aser.pro player url}``."""
         text = self._page(page_url)
         episodes: Dict[int, str] = {}
         for number, link in _EPISODE_LINK.findall(text):
@@ -118,11 +118,11 @@ class Animedia:
                 link = "https:" + link
             episodes.setdefault(int(number), html.unescape(link))
         if not episodes:
-            raise NotFound(f"На странице {page_url} не найдено ни одной серии")
+            raise NotFound(f"No episodes were found on the page {page_url}")
         return dict(sorted(episodes.items()))
 
     def players(self, page_url: str) -> Dict[str, List[str]]:
-        """Все плееры страницы: ``{"animedia": [...], "kodik": [...]}``."""
+        """Every player on the page: ``{"animedia": [...], "kodik": [...]}``."""
         text = self._page(page_url)
         animedia = []
         seen = set()
@@ -139,19 +139,19 @@ class Animedia:
         return {"animedia": animedia, "kodik": kodik}
 
     def resolve(self, url: str, **kwargs: Any) -> PlayerResult:
-        """Сразу получить потоки по ссылке на плеер."""
+        """Get the streams straight from a player url."""
         from ..registry import extract
 
         return extract(url, **kwargs)
 
-    # -- внутреннее -------------------------------------------------------
+    # -- internals ----------------------------------------------------------
     def _page(self, url: str) -> str:
         resp = self._client.get(url, headers={"Referer": self.base_url + "/"})
         if resp.status == 404:
-            raise NotFound(f"Страница не найдена: {url}")
+            raise NotFound(f"Page not found: {url}")
         return resp.raise_for_status().text
 
-    # -- жизненный цикл ---------------------------------------------------
+    # -- lifecycle ------------------------------------------------------------
     def close(self) -> None:
         if self._own_client:
             self._client.close()
@@ -169,6 +169,6 @@ def _id_from_url(url: str) -> str:
 
 
 def _title_from_url(url: str) -> str:
-    """Запасное название из слага, если h1 недоступен."""
+    """Fallback title taken from the slug when the h1 is unavailable."""
     match = re.search(r"/\d+-([a-z0-9\-]+)\.html", url)
     return match.group(1).replace("-", " ").capitalize() if match else url

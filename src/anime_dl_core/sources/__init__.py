@@ -1,4 +1,4 @@
-"""Помощники для получения ссылок на плееры с сайтов-агрегаторов."""
+"""Helpers that find player links on aggregator sites."""
 
 from .alloha import Alloha, AllohaItem, AllohaTranslation
 from .animedia import Animedia, AnimediaItem

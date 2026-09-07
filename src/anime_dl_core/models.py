@@ -1,4 +1,4 @@
-"""Модели данных, которые возвращают все плееры библиотеки."""
+"""The data models every player in the library returns."""
 
 from __future__ import annotations
 
@@ -11,29 +11,29 @@ __all__ = ["StreamKind", "Stream", "SkipSegment", "PlayerResult"]
 
 
 class StreamKind(str, Enum):
-    """Тип потока."""
+    """Kind of stream."""
 
     HLS = "hls"
-    """m3u8 — мастер-плейлист или плейлист конкретного качества."""
+    """m3u8 — either a master playlist or a playlist for one quality."""
     DASH = "dash"
-    """mpd — MPEG-DASH манифест."""
+    """mpd — an MPEG-DASH manifest."""
     MP4 = "mp4"
-    """Прямая ссылка на файл (mp4/webm)."""
+    """A direct link to a file (mp4/webm)."""
 
-    def __str__(self) -> str:  # pragma: no cover - тривиально
+    def __str__(self) -> str:  # pragma: no cover - trivial
         return self.value
 
 
-# Порядок предпочтения при прочих равных: прямой файл проще всего скачать,
-# мастер-плейлист удобнее всего проигрывать.
+# Preference order when everything else is equal: a plain file is the easiest to
+# download, a master playlist is the easiest to play.
 _KIND_ORDER = {StreamKind.MP4: 2, StreamKind.HLS: 1, StreamKind.DASH: 0}
 
 
 @dataclass(frozen=True)
 class SkipSegment:
-    """Фрагмент, который плеер предлагает пропустить (опенинг/эндинг).
+    """A stretch the player suggests skipping (opening/ending).
 
-    Время указано в секундах от начала файла.
+    Times are in seconds from the start of the file.
     """
 
     start: int
@@ -50,16 +50,16 @@ class SkipSegment:
 
 @dataclass(frozen=True)
 class Stream:
-    """Одна ссылка на видео.
+    """A single video link.
 
-    :param url: Прямая ссылка на плейлист/манифест/файл.
-    :param kind: Тип потока (:class:`StreamKind`).
-    :param quality: Высота картинки в пикселях (720, 1080, ...) или ``None``,
-        если качество неизвестно (например, для мастер-плейлиста HLS).
-    :param headers: Заголовки, которые обязательно нужно отправлять при
-        скачивании/проигрывании (обычно ``Referer`` и ``User-Agent``).
-    :param label: Человекочитаемая подпись (озвучка, "master", "AniLibria", ...).
-    :param extra: Всё, что специфично для конкретного плеера.
+    :param url: Direct link to a playlist, a manifest, or a file.
+    :param kind: Stream kind (:class:`StreamKind`).
+    :param quality: Picture height in pixels (720, 1080, ...), or ``None`` when
+        the quality is unknown (an HLS master playlist, for instance).
+    :param headers: Headers that must be sent when downloading or playing the
+        stream (usually ``Referer`` and ``User-Agent``).
+    :param label: Human-readable caption (the dub, ``"master"``, ``"AniLibria"``, ...).
+    :param extra: Anything specific to one particular player.
     """
 
     url: str
@@ -75,7 +75,7 @@ class Stream:
 
     @property
     def is_master(self) -> bool:
-        """Мастер-плейлист HLS (качество внутри выбирает плеер)."""
+        """An HLS master playlist (the player picks the quality itself)."""
         return self.kind is StreamKind.HLS and self.quality is None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -89,7 +89,7 @@ class Stream:
         }
 
     def ffmpeg_args(self, output: str, *, extra_args: Iterable[str] = ()) -> List[str]:
-        """Готовая команда ffmpeg (списком) для скачивания этого потока.
+        """A ready ffmpeg command (as a list) that downloads this stream.
 
         >>> stream.ffmpeg_args("episode.mp4")
         ['ffmpeg', '-headers', 'Referer: ...', '-i', 'https://...', '-c', 'copy', 'episode.mp4']
@@ -104,18 +104,18 @@ class Stream:
         return args
 
     def ffmpeg_command(self, output: str, *, extra_args: Iterable[str] = ()) -> str:
-        """То же, что :meth:`ffmpeg_args`, но одной строкой для копипаста в терминал."""
+        """Same as :meth:`ffmpeg_args`, but as one line you can paste into a terminal."""
         return " ".join(shlex.quote(a) for a in self.ffmpeg_args(output, extra_args=extra_args))
 
 
 @dataclass
 class PlayerResult:
-    """Результат разбора плеера.
+    """What parsing a player produced.
 
-    :param player: Имя плеера (``"aniboom"``, ``"kodik"``, ...).
-    :param source_url: Ссылка, которую разбирали.
-    :param streams: Все найденные потоки.
-    :param skip_segments: Опенинг/эндинг, если плеер их отдаёт.
+    :param player: Player name (``"aniboom"``, ``"kodik"``, ...).
+    :param source_url: The URL that was parsed.
+    :param streams: Every stream that was found.
+    :param skip_segments: Opening/ending, when the player exposes them.
     """
 
     player: str
@@ -139,7 +139,7 @@ class PlayerResult:
 
     @property
     def qualities(self) -> List[int]:
-        """Отсортированный список доступных качеств (без ``None``)."""
+        """Sorted list of the available qualities (``None`` dropped)."""
         return sorted({s.quality for s in self.streams if s.quality})
 
     def filter(
@@ -149,7 +149,7 @@ class PlayerResult:
         quality: Optional[int] = None,
         max_quality: Optional[int] = None,
     ) -> List[Stream]:
-        """Потоки, подходящие под условия (в том же порядке, что и в :attr:`streams`)."""
+        """Streams matching the conditions, in the same order as :attr:`streams`."""
         if isinstance(kind, str):
             kind = StreamKind(kind)
         res = self.streams
@@ -168,13 +168,13 @@ class PlayerResult:
         max_quality: Optional[int] = None,
         allow_master: bool = True,
     ) -> Stream:
-        """Лучший поток: максимальное качество, при равенстве — mp4 > hls > dash.
+        """The best stream: highest quality, ties broken by mp4 > hls > dash.
 
-        Потоки с неизвестным качеством (мастер-плейлисты) считаются худшими и
-        выбираются, только если других нет. ``allow_master=False`` исключает их
-        совсем.
+        Streams of unknown quality (master playlists) rank last and are picked
+        only when there is nothing else. ``allow_master=False`` drops them
+        entirely.
 
-        :raises NoStreamsFound: если под условия ничего не подошло.
+        :raises NoStreamsFound: when nothing matches the conditions.
         """
         from .errors import NoStreamsFound
 
@@ -183,7 +183,7 @@ class PlayerResult:
             candidates = [s for s in candidates if not s.is_master]
         if not candidates:
             raise NoStreamsFound(
-                f"Нет подходящих потоков (player={self.player}, kind={kind}, max_quality={max_quality})"
+                f"No matching streams (player={self.player}, kind={kind}, max_quality={max_quality})"
             )
         return max(
             candidates,
@@ -191,7 +191,7 @@ class PlayerResult:
         )
 
     def master(self) -> Optional[Stream]:
-        """Мастер-плейлист HLS, если он есть (удобно отдавать во внешний плеер)."""
+        """The HLS master playlist, if there is one (handy to hand to an external player)."""
         for s in self.streams:
             if s.is_master:
                 return s

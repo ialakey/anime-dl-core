@@ -1,11 +1,11 @@
-"""Необязательный помощник: где взять ссылки на плееры.
+"""Optional helper: where to get player links from.
 
-Сама библиотека занимается плеерами, но ссылку на плеер нужно откуда-то получить.
-Этот модуль умеет минимум для сквозного сценария на примере AnimeGO:
-поиск -> список серий -> список плееров (Aniboom / CVH / Kodik / Sibnet) -> потоки.
+The library itself deals with players, but a player link has to come from somewhere.
+This module does the minimum for an end-to-end run, using AnimeGO as the example:
+search -> episode list -> player list (Aniboom / CVH / Kodik / Sibnet) -> streams.
 
-Разметка сайта может меняться — если поиск перестал работать, чинить нужно
-регулярки здесь, ядро библиотеки от этого не зависит.
+The site markup changes from time to time — when search stops working, the regexes
+here are what needs fixing; the core of the library does not depend on any of it.
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ _CVH_ID = re.compile(r"/cdn-iframe/(\d+)", re.IGNORECASE)
 
 @dataclass(frozen=True)
 class AnimeItem:
-    """Найденное аниме."""
+    """An anime that was found."""
 
     id: str
     slug: str
@@ -54,14 +54,14 @@ class AnimeItem:
 
 @dataclass(frozen=True)
 class PlayerLink:
-    """Ссылка на конкретный плеер для конкретной озвучки."""
+    """A link to one particular player for one particular dub."""
 
     player: str
-    """Название плеера на сайте: ``AniBoom``, ``CVH``, ``Kodik``, ``Sibnet``."""
+    """The player name as the site spells it: ``AniBoom``, ``CVH``, ``Kodik``, ``Sibnet``."""
     label: str
-    """Название озвучки."""
+    """Name of the dub."""
     embed: str
-    """Ссылка, которую нужно передать в :func:`anime_dl_core.extract`."""
+    """The link to hand to :func:`anime_dl_core.extract`."""
     translation_id: Optional[str] = None
     cvh_id: Optional[str] = None
 
@@ -70,9 +70,9 @@ class PlayerLink:
 
 
 class AnimeGo:
-    """Мини-парсер AnimeGO: поиск и получение ссылок на плееры.
+    """A small AnimeGO parser: search, and getting player links.
 
-    Пример::
+    Example::
 
         from anime_dl_core.sources import AnimeGo
         import anime_dl_core
@@ -93,20 +93,20 @@ class AnimeGo:
         user_agent: str = DEFAULT_USER_AGENT,
         client: Optional[HttpClient] = None,
     ) -> None:
-        """:param mirror: домен зеркала, если animego.org заблокирован (например ``animego.me``)."""
+        """:param mirror: mirror domain, for when animego.org is blocked (``animego.me``, say)."""
         self.base_url = f"https://{mirror}" if mirror else "https://animego.org"
         self._client = client or HttpClient(proxy=proxy, timeout=timeout, user_agent=user_agent)
         self._own_client = client is None
         self._episodes_cache: Dict[str, Dict[int, str]] = {}
 
-    # -- поиск ---------------------------------------------------------
+    # -- search ----------------------------------------------------------
     def search(self, query: str, *, limit: int = 20) -> List[AnimeItem]:
-        """Поиск аниме по названию."""
+        """Search anime by name."""
         resp = self._client.get(f"{self.base_url}/search/anime?q={quote(query)}")
         if resp.status in (403, 503):
             raise ServiceError(
-                f"AnimeGO вернул {resp.status} — вероятно, включилась защита Cloudflare. "
-                "Попробуйте прокси или зеркало.",
+                f"AnimeGO answered {resp.status} — Cloudflare protection has probably kicked in. "
+                "Try a proxy or a mirror.",
                 status=resp.status,
                 url=resp.url,
             )
@@ -135,12 +135,13 @@ class AnimeGo:
             if len(items) >= limit:
                 break
         if not items:
+            # "ничего не найдено" is AnimeGO's own wording on an empty result page.
             if "ничего не найдено" in resp.text.lower():
-                raise NotFound(f"AnimeGO: по запросу {query!r} ничего не найдено")
+                raise NotFound(f"AnimeGO: nothing was found for {query!r}")
             raise NotFound(
-                f"AnimeGO не вернул ни одной карточки по запросу {query!r}. "
-                "Так бывает, когда сайт фильтрует запрос (часть тайтлов скрыта) "
-                "или изменилась вёрстка выдачи — тогда правьте регулярки в sources/animego.py."
+                f"AnimeGO returned no cards at all for {query!r}. "
+                "That happens when the site filters the query (some titles are hidden) "
+                "or when the result markup changed — then fix the regexes in sources/animego.py."
             )
         return items
 
@@ -149,12 +150,12 @@ class AnimeGo:
         """``https://animego.org/anime/naruto-70`` -> ``70``."""
         match = re.search(r"-(\d+)/?$", url.strip())
         if not match:
-            raise ExtractionError(f"В ссылке {url!r} нет id аниме AnimeGO")
+            raise ExtractionError(f"The url {url!r} carries no AnimeGO anime id")
         return match.group(1)
 
-    # -- плееры ---------------------------------------------------------
+    # -- players ----------------------------------------------------------
     def episodes(self, anime_id: str) -> Dict[int, str]:
-        """``{номер серии: ссылка на плеер этой серии}``."""
+        """``{episode number: player url for that episode}``."""
         anime_id = str(anime_id)
         if anime_id in self._episodes_cache:
             return self._episodes_cache[anime_id]
@@ -168,7 +169,7 @@ class AnimeGo:
         return episodes
 
     def players(self, anime_id: str, episode: int = 1) -> List[PlayerLink]:
-        """Список плееров и озвучек для серии."""
+        """The list of players and dubs for one episode."""
         anime_id = str(anime_id)
         if episode == 1:
             url = f"{self.base_url}/player/{anime_id}"
@@ -176,7 +177,7 @@ class AnimeGo:
             episodes = self.episodes(anime_id)
             if episode not in episodes:
                 raise NotFound(
-                    f"У аниме {anime_id} нет серии {episode}. Доступные: {sorted(episodes)[:1]}"
+                    f"Anime {anime_id} has no episode {episode}. Available: {sorted(episodes)[:1]}"
                     f"..{sorted(episodes)[-1:]}"
                 )
             url = episodes[episode]
@@ -195,6 +196,7 @@ class AnimeGo:
             links.append(
                 PlayerLink(
                     player=attrs.get("data-provider-title") or "unknown",
+                    # " (ошибка)" is the marker AnimeGO appends to a broken player.
                     label=html.unescape(label).replace(" (ошибка)", "").strip(),
                     embed=html.unescape(embed),
                     translation_id=attrs.get("data-ptranslation"),
@@ -202,40 +204,40 @@ class AnimeGo:
                 )
             )
         if not links:
-            raise NotFound(f"AnimeGO не отдал ни одного плеера для аниме {anime_id}, серия {episode}")
+            raise NotFound(f"AnimeGO served no players at all for anime {anime_id}, episode {episode}")
         return links
 
     def resolve(self, link: "PlayerLink | str", **kwargs: Any) -> PlayerResult:
-        """Сразу получить потоки: принимает :class:`PlayerLink` или ссылку на embed."""
+        """Get the streams straight away: accepts a :class:`PlayerLink` or an embed url."""
         from ..registry import extract
 
         embed = link.embed if isinstance(link, PlayerLink) else str(link)
         return extract(embed, **kwargs)
 
-    # -- внутреннее ------------------------------------------------------
+    # -- internals ---------------------------------------------------------
     def _player_html(self, url: str) -> str:
         resp = self._client.get(
             url, headers={"X-Requested-With": "XMLHttpRequest", "Referer": self.base_url + "/"}
         )
         if resp.status in (403, 503):
             raise ServiceError(
-                f"AnimeGO вернул {resp.status} при запросе плеера — вероятно, Cloudflare.",
+                f"AnimeGO answered {resp.status} when asked for a player — probably Cloudflare.",
                 status=resp.status,
                 url=url,
             )
         if resp.status == 404:
-            raise NotFound(f"Плеер не найден: {url}")
+            raise NotFound(f"Player not found: {url}")
         resp.raise_for_status()
         try:
             data = json.loads(resp.text)
         except ValueError as exc:
-            raise ExtractionError(f"Ответ плеера AnimeGO не является json ({url}): {exc}") from exc
+            raise ExtractionError(f"The AnimeGO player response is not json ({url}): {exc}") from exc
         content = (data.get("data") or {}).get("content")
         if not content:
-            raise ExtractionError(f"В ответе плеера AnimeGO нет html-содержимого: {url}")
+            raise ExtractionError(f"The AnimeGO player response carries no html content: {url}")
         return html.unescape(content)
 
-    # -- жизненный цикл ---------------------------------------------------
+    # -- lifecycle -----------------------------------------------------------
     def close(self) -> None:
         if self._own_client:
             self._client.close()
