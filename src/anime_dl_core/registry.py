@@ -24,6 +24,7 @@ __all__ = [
     "player_names",
     "get_player_class",
     "get_player",
+    "supports",
     "extract",
     "extract_async",
 ]
@@ -84,6 +85,24 @@ def get_player_class(url_or_name: str) -> Type[BasePlayer]:
     raise UnsupportedUrl(
         f"No player matched {value!r}. Known players: {', '.join(player_names())}"
     )
+
+
+def supports(url_or_name: str) -> Optional[str]:
+    """The name of the player that serves ``url_or_name``, or ``None``.
+
+    A non-raising counterpart of :func:`get_player_class` for callers that
+    sift through many links (an aggregator page, say) and only want to know
+    which ones the library can handle::
+
+        >>> supports("https://video.sibnet.ru/shell.php?videoid=1")
+        'sibnet'
+        >>> supports("https://example.com/player") is None
+        True
+    """
+    try:
+        return get_player_class(url_or_name).name
+    except UnsupportedUrl:
+        return None
 
 
 def get_player(url_or_name: str, **kwargs: Any) -> BasePlayer:

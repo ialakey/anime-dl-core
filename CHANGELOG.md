@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 
 ## [Unreleased]
 
+### Added
+
+- `supports(url_or_name)` — the name of the player that serves a link, or
+  `None`; a non-raising counterpart of `get_player_class` for callers that
+  sift through many aggregator links.
+
 ### Changed
 
 - **The code is now in English.** Docstrings, inline comments, exception

@@ -17,6 +17,7 @@ from anime_dl_core import (
     get_player_class,
     player_names,
     registry,
+    supports,
 )
 from anime_dl_core.utils import (
     absolute_url,
@@ -245,3 +246,13 @@ def test_animego_search_reports_empty_result():
     with pytest.raises(errors.NotFound) as info:
         AnimeGo(client=Client()).search("дандадан")
     assert "nothing was found" in str(info.value)
+
+
+class TestSupports:
+    def test_known_url_gives_player_name(self):
+        assert supports("https://video.sibnet.ru/shell.php?videoid=2589828") == "sibnet"
+        assert supports("kodik") == "kodik"
+
+    def test_unknown_url_gives_none(self):
+        assert supports("https://example.com/player/1") is None
+        assert supports("") is None
