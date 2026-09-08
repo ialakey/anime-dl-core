@@ -197,7 +197,7 @@ class AniboomPlayer(BasePlayer):
                     quality=variant["height"],
                     headers=master.headers,
                     label=f"{variant['height']}p" if variant["height"] else None,
-                    extra={"bandwidth": variant["bandwidth"], "codecs": variant["codecs"]},
+                    extra={"bandwidth": variant["bandwidth"], "codecs": variant["codecs"], "audio_url": variant.get("audio_url")},
                 )
             )
         return streams

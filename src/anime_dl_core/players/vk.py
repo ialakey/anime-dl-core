@@ -159,7 +159,7 @@ class VkPlayer(BasePlayer):
                     variant["height"],
                     master.headers,
                     f"{variant['height']}p" if variant["height"] else None,
-                    extra={"bandwidth": variant["bandwidth"], "codecs": variant["codecs"]},
+                    extra={"bandwidth": variant["bandwidth"], "codecs": variant["codecs"], "audio_url": variant.get("audio_url")},
                 )
             )
         return streams

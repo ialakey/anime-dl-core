@@ -13,6 +13,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
   `None`; a non-raising counterpart of `get_player_class` for callers that
   sift through many aggregator links.
 
+- HLS variants that keep their sound in a separate `#EXT-X-MEDIA:TYPE=AUDIO`
+  rendition (Aniboom's fMP4 playlists, for one) now carry it as
+  `Stream.audio_url` / `extra["audio_url"]`, and `ffmpeg_args()` pulls it in as
+  a second input with explicit `-map`s. Downloading a bare quality variant used
+  to produce a silent file.
+
 ### Changed
 
 - **The code is now in English.** Docstrings, inline comments, exception
