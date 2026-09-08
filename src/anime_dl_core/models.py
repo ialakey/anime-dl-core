@@ -59,7 +59,9 @@ class Stream:
     :param headers: Headers that must be sent when downloading or playing the
         stream (usually ``Referer`` and ``User-Agent``).
     :param label: Human-readable caption (the dub, ``"master"``, ``"AniLibria"``, ...).
-    :param extra: Anything specific to one particular player.
+    :param extra: Anything specific to one particular player. ``extra["audio_url"]``
+        is the separate HLS audio rendition of a video-only variant; :meth:`ffmpeg_args`
+        pulls it in as a second input.
     """
 
     url: str
@@ -78,6 +80,12 @@ class Stream:
         """An HLS master playlist (the player picks the quality itself)."""
         return self.kind is StreamKind.HLS and self.quality is None
 
+    @property
+    def audio_url(self) -> Optional[str]:
+        """The separate audio rendition of a video-only HLS variant, if any."""
+        value = self.extra.get("audio_url") if self.extra else None
+        return str(value) if value else None
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "url": self.url,
@@ -95,10 +103,16 @@ class Stream:
         ['ffmpeg', '-headers', 'Referer: ...', '-i', 'https://...', '-c', 'copy', 'episode.mp4']
         """
         args: List[str] = ["ffmpeg"]
+        header_args: List[str] = []
         if self.headers:
             joined = "".join(f"{k}: {v}\r\n" for k, v in self.headers.items())
-            args += ["-headers", joined]
-        args += ["-i", self.url, "-c", "copy"]
+            header_args = ["-headers", joined]
+        args += header_args + ["-i", self.url]
+        audio = self.audio_url
+        if audio:
+            # a video-only variant: bring its audio rendition in as a second input
+            args += header_args + ["-i", audio, "-map", "0:v:0", "-map", "1:a:0"]
+        args += ["-c", "copy"]
         args += list(extra_args)
         args.append(output)
         return args

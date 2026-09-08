@@ -17,6 +17,7 @@ from anime_dl_core import (
     get_player_class,
     player_names,
     registry,
+    supports,
 )
 from anime_dl_core.utils import (
     absolute_url,
@@ -245,3 +246,52 @@ def test_animego_search_reports_empty_result():
     with pytest.raises(errors.NotFound) as info:
         AnimeGo(client=Client()).search("дандадан")
     assert "nothing was found" in str(info.value)
+
+
+MASTER_WITH_AUDIO = """#EXTM3U
+#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="group_A1",NAME="audio_1",DEFAULT=YES,URI="media_1.m3u8"
+#EXT-X-STREAM-INF:BANDWIDTH=593867,RESOLUTION=640x360,CODECS="avc1.640028,mp4a.40.2",AUDIO="group_A1"
+media_0.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=2893867,RESOLUTION=1920x1080,CODECS="avc1.640028,mp4a.40.2",AUDIO="group_A1"
+media_9.m3u8
+"""
+
+
+class TestSeparateAudioRendition:
+    def test_variants_carry_the_audio_rendition(self):
+        variants = parse_master_playlist(MASTER_WITH_AUDIO, "https://cdn/x/master.m3u8")
+        assert [v["height"] for v in variants] == [360, 1080]
+        assert all(v["audio_url"] == "https://cdn/x/media_1.m3u8" for v in variants)
+
+    def test_variants_without_audio_group_have_none(self):
+        variants = parse_master_playlist(fixture("aniboom_master.m3u8"), "https://cdn/qk/id/master.m3u8")
+        assert variants and all("audio_url" in v for v in variants)
+
+    def test_ffmpeg_args_add_the_audio_input(self):
+        stream = Stream(
+            "https://cdn/x/media_9.m3u8", StreamKind.HLS, 1080,
+            headers={"Referer": "https://aniboom.one/"},
+            extra={"audio_url": "https://cdn/x/media_1.m3u8"},
+        )
+        args = stream.ffmpeg_args("out.mp4")
+        assert args.count("-i") == 2
+        assert args[args.index("-i") + 1] == "https://cdn/x/media_9.m3u8"
+        assert "https://cdn/x/media_1.m3u8" in args
+        assert args[args.index("-map"):args.index("-map") + 4] == ["-map", "0:v:0", "-map", "1:a:0"]
+        assert args.count("-headers") == 2
+        assert args[-1] == "out.mp4"
+
+    def test_ffmpeg_args_without_audio_are_unchanged(self):
+        stream = Stream("https://cdn/x/media_9.m3u8", StreamKind.HLS, 1080)
+        assert stream.ffmpeg_args("out.mp4") == ["ffmpeg", "-i", "https://cdn/x/media_9.m3u8", "-c", "copy", "out.mp4"]
+        assert stream.audio_url is None
+
+
+class TestSupports:
+    def test_known_url_gives_player_name(self):
+        assert supports("https://video.sibnet.ru/shell.php?videoid=2589828") == "sibnet"
+        assert supports("kodik") == "kodik"
+
+    def test_unknown_url_gives_none(self):
+        assert supports("https://example.com/player/1") is None
+        assert supports("") is None

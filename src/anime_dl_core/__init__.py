@@ -51,6 +51,7 @@ from .registry import (
     get_player_class,
     player_names,
     register,
+    supports,
 )
 
 __version__ = "0.4.1"
@@ -62,6 +63,7 @@ __all__ = [
     "extract_async",
     "get_player",
     "get_player_class",
+    "supports",
     "all_players",
     "player_names",
     "describe_players",

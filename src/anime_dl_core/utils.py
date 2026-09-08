@@ -58,17 +58,36 @@ def json_from_attribute(value: str) -> Dict[str, Any]:
 
 
 _STREAM_INF = re.compile(r"#EXT-X-STREAM-INF:([^\n]+)\n\s*([^\s#][^\n]*)")
+_MEDIA_AUDIO = re.compile(r"#EXT-X-MEDIA:([^\n]*TYPE=AUDIO[^\n]*)", re.IGNORECASE)
 
 
 def parse_master_playlist(content: str, base_url: str) -> List[Dict[str, Any]]:
     """Splits an HLS master playlist into its quality variants.
 
-    Returns a list of ``{"url", "height", "width", "bandwidth", "codecs"}`` dicts,
-    sorted from the lowest quality up.
+    Returns a list of ``{"url", "height", "width", "bandwidth", "codecs",
+    "audio_url"}`` dicts, sorted from the lowest quality up.
+
+    ``audio_url`` is the separate audio rendition (``#EXT-X-MEDIA:TYPE=AUDIO``)
+    a variant refers to through its ``AUDIO="group"`` attribute, or ``None``
+    when the variant carries its own sound. fMP4 playlists (Aniboom, for one)
+    keep audio out of the video variants, so a download of a bare variant is
+    silent unless that rendition is fetched alongside.
     """
+    audio_groups: Dict[str, str] = {}
+    for attrs in _MEDIA_AUDIO.findall(content):
+        group = re.search(r'GROUP-ID="([^"]+)"', attrs)
+        uri = re.search(r'URI="([^"]+)"', attrs)
+        if not group or not uri:
+            continue
+        # the DEFAULT rendition wins; otherwise the first one listed
+        if group.group(1) not in audio_groups or re.search(r"DEFAULT=YES", attrs, re.IGNORECASE):
+            audio_groups[group.group(1)] = absolute_url(base_url, uri.group(1).strip())
+
     variants: List[Dict[str, Any]] = []
     for attrs, uri in _STREAM_INF.findall(content):
         info: Dict[str, Any] = {"url": absolute_url(base_url, uri.strip())}
+        audio = re.search(r'AUDIO="([^"]+)"', attrs)
+        info["audio_url"] = audio_groups.get(audio.group(1)) if audio else None
         resolution = re.search(r"RESOLUTION=(\d+)x(\d+)", attrs)
         if resolution:
             info["width"] = int(resolution.group(1))
