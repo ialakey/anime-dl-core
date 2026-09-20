@@ -51,7 +51,7 @@ print(stream.ffmpeg_command("ep1.mp4"))     # готовая команда дл
 | Плеер | Имя в библиотеке | Что принимает на вход | Что отдаёт | Проверен вживую |
 |---|---|---|---|---|
 | Aniboom | `aniboom` | `https://aniboom.one/embed/<id>` или сам `<id>` | HLS (master + по качествам), DASH | ✅ |
-| CVH (CdnVideoHub) | `cvh` | `/cdn-iframe/<id>/<студия>/<сезон>/<серия>` или числовой `<id>` | HLS, DASH, MP4 144p–1080p | ✅ |
+| CVH (CdnVideoHub) | `cvh` | `/cdn-iframe/<id>/<сезон>/<серия>?dubbing=<студия>` или числовой `<id>` | HLS, DASH, MP4 144p–1080p | ✅ |
 | Kodik | `kodik` | `https://kodikplayer.com/seria|serial|video/<id>/<hash>/720p` | HLS и MP4 по качествам + таймкоды опенинга/эндинга | ✅ |
 | Sibnet | `sibnet` | `https://video.sibnet.ru/shell.php?videoid=<id>` или `<id>` | MP4 | ✅ |
 | Animedia | `animedia` | `https://aser.pro/vod/<id>` или сам `<id>` | HLS (master + по качествам) | ✅ |
@@ -224,6 +224,8 @@ with CvhPlayer() as player:
     result = player.extract("51019", season=1, episode=3, studio="AniLibria")
 
     # если ссылка из iframe — сезон/серия/студия берутся прямо из неё
+    result = player.extract("https://animego.me/cdn-iframe/51019/1/3?dubbing=AnilibriaTV")
+    # старый формат, со студией в пути, тоже работает
     result = player.extract("https://animego.me/cdn-iframe/51019/AnilibriaTV/1/3")
 ```
 
@@ -394,7 +396,7 @@ with AnimeGo() as site:                    # AnimeGo(mirror="animego.me", proxy=
 
     for link in site.players(anime.id, episode=2):
         print(link.player, link.label, link.embed)
-        # CVH      JAM CLUB     https://animego.me/cdn-iframe/40748/Jam Club/1/2
+        # CVH      JAM CLUB     https://animego.me/cdn-iframe/40748/1/2?dubbing=Jam%20Club
         # AniBoom  JAM CLUB     https://aniboom.one/embed/9G1MJKRXV8z?episode=2...
         # Kodik    JAM CLUB     https://kodikplayer.com/seria/723706/...
 

@@ -1,9 +1,12 @@
 """The CVH player — CdnVideoHub (plapi.cdnvideohub.com), listed as "CVH" on AnimeGO.
 
 How it works: a media item has a numeric ``cvh_id`` that the site drops into an
-iframe (``/cdn-iframe/<cvh_id>/<studio>/<season>/<episode>``). That id fetches the
-playlist of every episode and dub through an open API, and the ``vkId`` of one
+iframe (``/cdn-iframe/<cvh_id>/<season>/<episode>?dubbing=<studio>``). That id fetches
+the playlist of every episode and dub through an open API, and the ``vkId`` of one
 episode fetches its streams. The video itself is served by Odnoklassniki's CDN (okcdn.ru).
+
+AnimeGO used to keep the dub in the path (``/cdn-iframe/<cvh_id>/<studio>/<season>/<episode>``)
+and still serves such links here and there, so both shapes are understood.
 """
 
 from __future__ import annotations
@@ -11,6 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Sequence
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from ..base import BasePlayer, compile_patterns
 from ..errors import ExtractionError, NoStreamsFound, NotFound
@@ -19,8 +23,10 @@ from ..utils import quality_from_label, to_int
 
 __all__ = ["CvhPlayer", "CvhEpisode"]
 
-_IFRAME_RE = re.compile(r"/cdn-iframe/(\d+)(?:/([^/?#]+))?(?:/(\d+))?(?:/(\d+))?", re.IGNORECASE)
+_IFRAME_RE = re.compile(r"/cdn-iframe/(\d+)((?:/[^/?#]+){0,3})", re.IGNORECASE)
 _VIDEO_RE = re.compile(r"/player/sv/video/(\d+)", re.IGNORECASE)
+#: Everything that is not a letter or a digit — spaces, dashes, dots.
+_PUNCTUATION_RE = re.compile(r"[\W_]+", re.UNICODE)
 
 #: Maps the keys of a CVH response (Odnoklassniki naming) to picture height.
 QUALITY_KEYS = {
@@ -103,7 +109,9 @@ class CvhPlayer(BasePlayer):
     def parse_url(cls, url: str) -> Dict[str, Any]:
         """Pulls ``cvh_id``/studio/season/episode out of an iframe url.
 
-        Also understands a bare numeric id and a ``/player/sv/video/<vkId>`` url.
+        The dub comes from ``?dubbing=`` and falls back to the old path segment;
+        the numeric segments are season and episode, in that order. A bare numeric
+        id and a ``/player/sv/video/<vkId>`` url are understood as well.
         """
         url = str(url).strip()
         if url.isdigit():
@@ -115,14 +123,19 @@ class CvhPlayer(BasePlayer):
         if not match:
             raise ExtractionError(
                 f"Could not make sense of the CVH url: {url!r}. "
-                "Expected /cdn-iframe/<id>/<studio>/<season>/<episode> or a numeric id."
+                "Expected /cdn-iframe/<id>/<season>/<episode>?dubbing=<studio> or a numeric id."
             )
-        studio = match.group(2)
+        segments = [segment for segment in match.group(2).split("/") if segment]
+        studio = None
+        # The old shape kept the dub first in the path; the new one starts with the season.
+        if segments and not segments[0].isdigit():
+            studio = unquote(segments.pop(0))
+        numbers = [int(segment) for segment in segments if segment.isdigit()]
         return {
             "cvh_id": match.group(1),
-            "studio": studio.replace("%20", " ") if studio else None,
-            "season": int(match.group(3)) if match.group(3) else None,
-            "episode": int(match.group(4)) if match.group(4) else None,
+            "studio": _dubbing_param(url) or studio,
+            "season": numbers[0] if numbers else None,
+            "episode": numbers[1] if len(numbers) > 1 else None,
         }
 
     # -- API ------------------------------------------------------------
@@ -294,15 +307,33 @@ class CvhPlayer(BasePlayer):
         )
 
 
+def _dubbing_param(url: str) -> Optional[str]:
+    """The dub name out of ``?dubbing=`` — that is where AnimeGO keeps it now."""
+    values = parse_qs(urlsplit(url).query).get("dubbing") or []
+    for value in values:
+        value = value.strip()
+        if value:
+            return value
+    return None
+
+
+def _studio_key(name: Optional[str]) -> str:
+    """Case, spaces and dashes are not to be trusted: AnimeGO writes the same dub
+    as ``СВ дубль`` in the iframe url and ``СВ-Дубль`` in the playlist."""
+    return _PUNCTUATION_RE.sub("", (name or "").casefold())
+
+
 def _match_studio(name: str, items: Iterable[CvhEpisode]) -> Optional[CvhEpisode]:
     """Loose matching of a dub name: exact first, then substring."""
     items = list(items)
-    wanted = name.strip().lower()
+    wanted = _studio_key(name)
+    if not wanted:
+        return None
     for item in items:
-        if (item.studio or "").strip().lower() == wanted:
+        if _studio_key(item.studio) == wanted:
             return item
     for item in items:
-        studio = (item.studio or "").strip().lower()
+        studio = _studio_key(item.studio)
         if studio and (wanted in studio or studio in wanted):
             return item
     return None

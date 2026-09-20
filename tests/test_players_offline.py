@@ -97,6 +97,33 @@ def test_cvh_parses_iframe_url():
     assert CvhPlayer.parse_url("51019")["cvh_id"] == "51019"
 
 
+def test_cvh_parses_iframe_url_with_dubbing_query():
+    # AnimeGO now keeps the dub in ?dubbing= and the season/episode in the path.
+    series = CvhPlayer.parse_url("https://animego.me/cdn-iframe/13601/1/1?dubbing=AnilibriaTV")
+    assert series == {"cvh_id": "13601", "studio": "AnilibriaTV", "season": 1, "episode": 1}
+
+    # A film has no season/episode segments at all.
+    film = CvhPlayer.parse_url("https://animego.me/cdn-iframe/35851?dubbing=Reanimedia")
+    assert film == {"cvh_id": "35851", "studio": "Reanimedia", "season": None, "episode": None}
+
+    quoted = "https://animego.me/cdn-iframe/13601/1/2?dubbing=%D0%A1%D0%92%20%D0%B4%D1%83%D0%B1%D0%BB%D1%8C"
+    encoded = CvhPlayer.parse_url(quoted)
+    assert encoded["studio"] == "СВ дубль"
+    assert (encoded["season"], encoded["episode"]) == (1, 2)
+
+
+def test_cvh_studio_matching_ignores_dashes_and_case(make_client):
+    client = make_client(
+        {"/playlist": fixture("cvh_playlist.json"), "/video/": fixture("cvh_video.json")}
+    )
+    player = CvhPlayer(client)
+    episodes = player.playlist("51019")
+    studio = next(episode.studio for episode in episodes if episode.studio)
+
+    # The url spells the dub with spaces, the playlist with dashes (or the other way round).
+    assert CvhPlayer.select(episodes, episode=1, studio=studio.replace(" ", "-").upper()) is not None
+
+
 def test_cvh_studio_matching_is_fuzzy(make_client):
     client = make_client(
         {"/playlist": fixture("cvh_playlist.json"), "/video/": fixture("cvh_video.json")}

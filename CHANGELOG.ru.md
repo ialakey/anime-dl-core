@@ -5,6 +5,21 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 версии — по [семантическому версионированию](https://semver.org/lang/ru/).
 
+## [Unreleased]
+
+### Исправлено
+
+- CVH: AnimeGO перенёс озвучку из пути iframe в query-параметр `?dubbing=`,
+  теперь ссылка на сериал выглядит как `/cdn-iframe/13601/1/1?dubbing=AnilibriaTV`,
+  а на фильм — как `/cdn-iframe/35851?dubbing=Reanimedia`. `CvhPlayer.parse_url`
+  принимал сезон за название студии, и `extract()` падал с
+  `NotFound: Dub '1' was not found`. Теперь озвучка берётся из `?dubbing=`,
+  числовые сегменты читаются как сезон и серия, а старый формат
+  `/cdn-iframe/<id>/<студия>/<сезон>/<серия>` продолжает работать.
+  ([#4](https://github.com/ialakey/anime-dl-core/issues/4))
+- CVH: названия озвучек сопоставляются без учёта пробелов, дефисов и регистра —
+  одну и ту же студию AnimeGO пишет как `СВ дубль` в ссылке и `СВ-Дубль` в плейлисте.
+
 ## [0.5.0] — 2026-09-09
 
 ### Добавлено

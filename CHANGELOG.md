@@ -5,6 +5,21 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [semantic versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- CVH: AnimeGO moved the dub out of the iframe path and into a `?dubbing=`
+  query parameter, so a series link now looks like
+  `/cdn-iframe/13601/1/1?dubbing=AnilibriaTV` and a film link like
+  `/cdn-iframe/35851?dubbing=Reanimedia`. `CvhPlayer.parse_url` was reading the
+  season as the dub name and `extract()` failed with `NotFound: Dub '1' was not
+  found`. The dub is now taken from `?dubbing=`, the numeric segments are read
+  as season and episode, and the old `/cdn-iframe/<id>/<studio>/<season>/<episode>`
+  shape keeps working. ([#4](https://github.com/ialakey/anime-dl-core/issues/4))
+- CVH: dub names are matched ignoring spaces, dashes and case — AnimeGO writes
+  the same dub as `СВ дубль` in the url and `СВ-Дубль` in the playlist.
+
 ## [0.5.0] — 2026-09-09
 
 ### Added
